@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدفع عبر CCP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <header class="bg-white shadow-md fixed w-full z-50">
+    <div class="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
+      <a href="index.html"><img src="images/products/wall.png" alt="شعار" class="h-12 rounded-full shadow"></a>
+      <h1 class="text-xl font-bold">الدفع عبر CCP</h1>
+    </div>
+  </header>
+
+  <main class="pt-28 pb-20 px-6 max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+    <h2 class="text-2xl font-bold mb-6 text-center">ارفع إثبات الدفع</h2>
+
+    <form id="ccpForm" class="space-y-6">
+      <div>
+        <label class="block mb-2 font-semibold">الاسم واللقب</label>
+        <input type="text" name="fullname" required class="w-full border rounded-lg p-3">
+      </div>
+
+      <div>
+        <label class="block mb-2 font-semibold">رقم الهاتف</label>
+        <input type="tel" name="phone" required class="w-full border rounded-lg p-3">
+      </div>
+
+      <div>
+        <label class="block mb-2 font-semibold">رفع صورة الدفع</label>
+        <input type="file" name="paymentImage" id="paymentImage" accept="image/*" required class="w-full border rounded-lg p-3">
+      </div>
+
+      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+        إرسال الدفع
+      </button>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("ccpForm");
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      // إرسال الصورة والبيانات إلى Telegram
+      const token = "8258052427:AAEaIR2c1JCwcJ0POjn8FfyvZ2dqJyhCTIs";
+      const chatId = "6858411980";
+
+      const file = formData.get("paymentImage");
+
+      const data = new FormData();
+      data.append("chat_id", chatId);
+      data.append("photo", file);
+      data.append("caption", `✅ إثبات الدفع\n👤 الاسم: ${formData.get("fullname")}\n📞 الهاتف: ${formData.get("phone")}`);
+
+      fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+        method: "POST",
+        body: data
+      })
+      .then(() => {
+        alert("✅ تم إرسال إثبات الدفع بنجاح");
+        form.reset();
+      })
+      .catch(() => {
+        alert("❌ حدث خطأ، حاول مجددًا");
+      });
+
+    });
+  </script>
+
+</body>
+</html>
