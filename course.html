@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدورات | Schooling</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+<!-- Header -->
+<header class="fixed w-full bg-white/80 backdrop-blur shadow z-50">
+  <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+    <h1 class="text-xl font-bold text-blue-600">Schooling</h1>
+    <a href="index.html" class="text-sm hover:text-blue-600">الرئيسية</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="pt-32 pb-20 bg-gradient-to-l from-blue-50 to-white text-center">
+  <h2 class="text-4xl font-bold mb-4">دوراتنا التعليمية</h2>
+  <p class="text-gray-600 max-w-xl mx-auto">
+    اختر المادة، شاهد التفاصيل، وسجّل مباشرة في الدروس الحضورية أو عبر Zoom
+  </p>
+</section>
+
+<!-- Courses -->
+<section class="max-w-7xl mx-auto px-6 pb-24 grid gap-8 md:grid-cols-3">
+
+  <!-- Course Card -->
+  <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <i data-lucide="book-open" class="text-blue-600"></i>
+      <h3 class="text-xl font-semibold">الرياضيات</h3>
+    </div>
+
+    <p class="text-gray-600 mb-4">
+      دروس دعم في الرياضيات لجميع المستويات مع تمارين تطبيقية.
+    </p>
+
+    <ul class="text-sm text-gray-500 mb-6 space-y-1">
+      <li>📅 الأيام: السبت - الإثنين</li>
+      <li>⏰ 18:00 - 19:30</li>
+      <li>💻 حضوري + Zoom</li>
+    </ul>
+
+    <a href="#" class="block text-center bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition">
+      تسجيل في الدورة
+    </a>
+  </div>
+
+  <!-- Course Card -->
+  <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <i data-lucide="pen-tool" class="text-green-600"></i>
+      <h3 class="text-xl font-semibold">اللغة العربية</h3>
+    </div>
+
+    <p class="text-gray-600 mb-4">
+      قواعد، تعبير كتابي، وفهم النصوص بطريقة مبسطة.
+    </p>
+
+    <ul class="text-sm text-gray-500 mb-6 space-y-1">
+      <li>📅 الأيام: الأحد - الثلاثاء</li>
+      <li>⏰ 17:00 - 18:30</li>
+      <li>💻 Zoom مباشر</li>
+    </ul>
+
+    <a href="#" class="block text-center bg-green-600 text-white py-2 rounded-xl hover:bg-green-700 transition">
+      تسجيل في الدورة
+    </a>
+  </div>
+
+  <!-- Course Card -->
+  <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <i data-lucide="globe" class="text-purple-600"></i>
+      <h3 class="text-xl font-semibold">تاريخ وجغرافيا</h3>
+    </div>
+
+    <p class="text-gray-600 mb-4">
+      شرح مبسط مع خرائط، تواريخ، ومراجعات منظمة.
+    </p>
+
+    <ul class="text-sm text-gray-500 mb-6 space-y-1">
+      <li>📅 الأيام: الخميس</li>
+      <li>⏰ 16:00 - 18:00</li>
+      <li>🏫 حضوري</li>
+    </ul>
+
+    <a href="#" class="block text-center bg-purple-600 text-white py-2 rounded-xl hover:bg-purple-700 transition">
+      تسجيل في الدورة
+    </a>
+  </div>
+
+</section>
+
+<!-- CTA -->
+<section class="bg-blue-600 text-white text-center py-16">
+  <h3 class="text-3xl font-bold mb-4">هل أنت أستاذ؟</h3>
+  <p class="mb-6">أنشئ دورتك الخاصة وأدر طلابك بسهولة</p>
+  <a href="#" class="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition">
+    أضف دورة
+  </a>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-300 text-center py-6">
+  © 2025 Schooling — جميع الحقوق محفوظة
+</footer>
+
+<script>
+  lucide.createIcons();
+</script>
+
+</body>
+</html>
