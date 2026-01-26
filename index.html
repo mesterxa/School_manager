@@ -1,180 +1,107 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartSchool – Private School Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduDZ – منصة التعليم</title>
 
-<style>
-:root{
-  --primary:#2563eb;
-  --primary-dark:#1e40af;
-  --bg-light:#f8fafc;
-  --bg-dark:#0f172a;
-  --card-light:#ffffff;
-  --card-dark:#111827;
-  --text-dark:#0f172a;
-  --text-light:#e5e7eb;
-  --radius:18px;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:"Segoe UI",system-ui,sans-serif;
-  background:var(--bg-light);
-  color:var(--text-dark);
-}
-body.dark{background:var(--bg-dark);color:var(--text-light)}
-a{text-decoration:none;color:inherit}
-.rtl{direction:rtl;text-align:right}
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-/* NAVBAR */
-.navbar{
-  height:60px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  background:var(--card-light);
-  box-shadow:0 6px 16px rgba(0,0,0,.06);
-}
-body.dark .navbar{background:var(--card-dark)}
-.navbar .links a{
-  margin-left:18px;
-  font-weight:600;
-  color:var(--primary);
-}
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-/* HERO */
-.hero{
-  padding:90px 20px;
-  text-align:center;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#fff;
-}
-.hero h1{font-size:38px;margin-bottom:14px}
-.hero p{font-size:18px;max-width:720px;margin:auto;opacity:.95}
+  <!-- AOS Animation -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-/* BUTTONS */
-.btn{
-  display:inline-block;
-  margin:10px;
-  padding:14px 34px;
-  border-radius:999px;
-  font-weight:700;
-  transition:.25s;
-}
-.btn-primary{background:#fff;color:var(--primary)}
-.btn-outline{border:2px solid #fff;color:#fff}
-.btn:hover{transform:translateY(-2px)}
-
-/* CONTENT */
-.container{max-width:1100px;margin:auto;padding:0 20px}
-.section-title{text-align:center;margin:80px 0 20px;font-size:28px}
-
-/* CARDS */
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:26px;
-}
-.card{
-  background:var(--card-light);
-  padding:30px;
-  border-radius:var(--radius);
-  text-align:center;
-  box-shadow:0 12px 28px rgba(0,0,0,.08);
-  transition:.25s;
-}
-body.dark .card{background:var(--card-dark)}
-.card:hover{transform:translateY(-6px)}
-.card a{display:inline-block;margin-top:14px;font-weight:600;color:var(--primary)}
-
-/* FOOTER */
-footer{margin-top:90px;padding:30px;text-align:center;font-size:14px;opacity:.8}
-</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
 
-<body>
+<body class="bg-gray-50 text-gray-800">
 
-<!-- NAVBAR -->
-<div class="navbar">
-  <strong>SmartSchool</strong>
-  <div class="links">
-    <a href="login.html">دخول</a>
-    <a href="register.html">تسجيل</a>
-    <span onclick="toggleLanguage()" style="cursor:pointer">EN</span>
+<!-- NAV -->
+<header class="fixed w-full z-50 bg-white/80 backdrop-blur shadow">
+  <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+    <h1 class="text-xl font-black text-blue-600">EduDZ</h1>
+    <nav class="hidden md:flex gap-6">
+      <a href="#courses" class="hover:text-blue-600">الدروس</a>
+      <a href="#how" class="hover:text-blue-600">كيف تعمل</a>
+      <a href="#contact" class="hover:text-blue-600">تواصل</a>
+    </nav>
   </div>
-</div>
+</header>
 
 <!-- HERO -->
-<section class="hero">
-  <h1 id="hero-title">منصة ذكية لإدارة المدارس الخصوصية</h1>
-  <p id="hero-sub">
-    إدارة التلاميذ، الأساتذة، الأقسام، والرسوم الدراسية بسهولة وفي مكان واحد
-  </p>
-  <div class="actions">
-    <a href="register.html" class="btn btn-primary">إنشاء حساب</a>
-    <a href="login.html" class="btn btn-outline">تسجيل الدخول</a>
+<section class="h-screen flex items-center justify-center text-center px-6 bg-gradient-to-br from-blue-50 to-white">
+  <div data-aos="fade-up">
+    <h2 class="text-4xl md:text-6xl font-extrabold mb-6">
+      تعلم من بيتك<br><span class="text-blue-600">بأساتذة جزائريين</span>
+    </h2>
+    <p class="text-lg text-gray-600 mb-8">
+      دروس مباشرة – تسجيلات – متابعة مستمرة
+    </p>
+    <a href="#courses" class="bg-blue-600 text-white px-8 py-4 rounded-xl shadow hover:scale-105 transition">
+      استعرض الدروس
+    </a>
   </div>
 </section>
 
-<!-- FEATURES -->
-<div class="container">
-  <h2 class="section-title" id="path-title">مميزات المنصة</h2>
+<!-- COURSES -->
+<section id="courses" class="py-20 max-w-7xl mx-auto px-6">
+  <h3 class="text-3xl font-bold text-center mb-12">المواد المتوفرة</h3>
 
-  <div class="cards">
+  <div class="grid md:grid-cols-3 gap-8">
 
-    <div class="card">
-      <h3 id="c1">👨‍🎓 إدارة التلاميذ</h3>
-      <p id="d1">تسجيل التلاميذ، متابعة الحضور والنتائج.</p>
-      <a href="#">عرض</a>
+    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h4 class="text-xl font-bold mb-2">📘 الرياضيات</h4>
+      <p class="text-gray-600 mb-4">دروس مباشرة + تسجيلات + تمارين</p>
+      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
     </div>
 
-    <div class="card">
-      <h3 id="c2">👨‍🏫 إدارة الأساتذة</h3>
-      <p id="d2">تنظيم الأساتذة والجداول الزمنية.</p>
-      <a href="#">عرض</a>
+    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h4 class="text-xl font-bold mb-2">📗 اللغة العربية</h4>
+      <p class="text-gray-600 mb-4">قواعد – نصوص – تعبير</p>
+      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
     </div>
 
-    <div class="card">
-      <h3 id="c3">💰 الإدارة المالية</h3>
-      <p id="d3">متابعة الرسوم، المدفوعات، والتقارير.</p>
-      <a href="#">عرض</a>
+    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h4 class="text-xl font-bold mb-2">🌍 تاريخ وجغرافيا</h4>
+      <p class="text-gray-600 mb-4">تبسيط + مراجعات</p>
+      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
     </div>
 
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
-<footer id="footer">
-  © 2026 SmartSchool – إدارة المدارس الخصوصية
+<!-- HOW -->
+<section id="how" class="py-20 bg-gray-100">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <h3 class="text-3xl font-bold mb-12">كيف تشترك؟</h3>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div data-aos="fade-up">📝<p class="font-semibold mt-2">تسجل في الموقع</p></div>
+      <div data-aos="fade-up" data-aos-delay="150">💳<p class="font-semibold mt-2">تحويل بريدي / BaridiMob</p></div>
+      <div data-aos="fade-up" data-aos-delay="300">✅<p class="font-semibold mt-2">تفعيل الحساب</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="py-20 text-center">
+  <h3 class="text-3xl font-bold mb-6">تواصل معنا</h3>
+  <a href="https://t.me/YOUR_BOT" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
+    تواصل عبر تلغرام
+  </a>
+</section>
+
+<footer class="bg-gray-900 text-gray-300 py-6 text-center">
+  © 2025 EduDZ – منصة تعليمية
 </footer>
 
-<script>
-let ar=true;
-function toggleLanguage(){
-  ar=!ar;
-  document.body.classList.toggle("rtl");
-  if(!ar){
-    hero-title.innerText="Smart Platform for Private School Management";
-    hero-sub.innerText="Manage students, teachers, classes and payments easily";
-    path-title.innerText="Platform Features";
-    c1.innerText="👨‍🎓 Student Management";
-    d1.innerText="Register students and track attendance and grades.";
-    c2.innerText="👨‍🏫 Teacher Management";
-    d2.innerText="Organize teachers and schedules.";
-    c3.innerText="💰 Financial Management";
-    d3.innerText="Track fees, payments and reports.";
-    footer.innerText="© 2026 SmartSchool – Private School Management";
-  }else{
-    location.reload();
-  }
-}
-if(window.matchMedia("(prefers-color-scheme: dark)").matches){
-  document.body.classList.add("dark");
-}
-</script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init();</script>
 
 </body>
 </html>
