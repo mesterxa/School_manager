@@ -11,7 +11,7 @@
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-  <!-- AOS Animation -->
+  <!-- AOS -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
   <style>
@@ -21,34 +21,51 @@
 
 <body class="bg-gray-50 text-gray-800">
 
-<!-- NAV -->
+<!-- ================= NAV ================= -->
 <header class="fixed w-full z-50 bg-white/80 backdrop-blur shadow">
   <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
     <h1 class="text-xl font-black text-blue-600">EduDZ</h1>
-    <nav class="hidden md:flex gap-6">
+
+    <nav class="hidden md:flex gap-6 font-semibold items-center">
       <a href="#courses" class="hover:text-blue-600">الدروس</a>
       <a href="#how" class="hover:text-blue-600">كيف تعمل</a>
-      <a href="#contact" class="hover:text-blue-600">تواصل</a>
+      <a href="ccp.html" class="hover:text-blue-600">الدفع</a>
+      <a href="login.html" class="hover:text-blue-600">تسجيل الدخول</a>
+      <a href="register.html"
+         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+        إنشاء حساب
+      </a>
     </nav>
   </div>
 </header>
 
-<!-- HERO -->
+<!-- ================= HERO ================= -->
 <section class="h-screen flex items-center justify-center text-center px-6 bg-gradient-to-br from-blue-50 to-white">
   <div data-aos="fade-up">
-    <h2 class="text-4xl md:text-6xl font-extrabold mb-6">
-      تعلم من بيتك<br><span class="text-blue-600">بأساتذة جزائريين</span>
+    <h2 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+      تعلم من بيتك <br>
+      <span class="text-blue-600">بأساتذة جزائريين</span>
     </h2>
+
     <p class="text-lg text-gray-600 mb-8">
       دروس مباشرة – تسجيلات – متابعة مستمرة
     </p>
-    <a href="#courses" class="bg-blue-600 text-white px-8 py-4 rounded-xl shadow hover:scale-105 transition">
-      استعرض الدروس
-    </a>
+
+    <div class="flex flex-col md:flex-row gap-4 justify-center">
+      <a href="#courses"
+         class="bg-blue-600 text-white px-8 py-4 rounded-xl shadow hover:scale-105 transition">
+        استعرض الدروس
+      </a>
+
+      <a href="login.html"
+         class="border border-blue-600 text-blue-600 px-8 py-4 rounded-xl hover:bg-blue-50 transition">
+        تسجيل الدخول
+      </a>
+    </div>
   </div>
 </section>
 
-<!-- COURSES -->
+<!-- ================= COURSES ================= -->
 <section id="courses" class="py-20 max-w-7xl mx-auto px-6">
   <h3 class="text-3xl font-bold text-center mb-12">المواد المتوفرة</h3>
 
@@ -60,13 +77,13 @@
       <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
     </div>
 
-    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+    <div data-aos="zoom-in" data-aos-delay="150" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
       <h4 class="text-xl font-bold mb-2">📗 اللغة العربية</h4>
       <p class="text-gray-600 mb-4">قواعد – نصوص – تعبير</p>
       <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
     </div>
 
-    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+    <div data-aos="zoom-in" data-aos-delay="300" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
       <h4 class="text-xl font-bold mb-2">🌍 تاريخ وجغرافيا</h4>
       <p class="text-gray-600 mb-4">تبسيط + مراجعات</p>
       <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
@@ -75,12 +92,12 @@
   </div>
 </section>
 
-<!-- HOW -->
+<!-- ================= HOW ================= -->
 <section id="how" class="py-20 bg-gray-100">
   <div class="max-w-5xl mx-auto px-6 text-center">
     <h3 class="text-3xl font-bold mb-12">كيف تشترك؟</h3>
 
-    <div class="grid md:grid-cols-3 gap-8">
+    <div class="grid md:grid-cols-3 gap-8 text-xl">
       <div data-aos="fade-up">📝<p class="font-semibold mt-2">تسجل في الموقع</p></div>
       <div data-aos="fade-up" data-aos-delay="150">💳<p class="font-semibold mt-2">تحويل بريدي / BaridiMob</p></div>
       <div data-aos="fade-up" data-aos-delay="300">✅<p class="font-semibold mt-2">تفعيل الحساب</p></div>
@@ -88,20 +105,16 @@
   </div>
 </section>
 
-<!-- CONTACT -->
-<section id="contact" class="py-20 text-center">
-  <h3 class="text-3xl font-bold mb-6">تواصل معنا</h3>
-  <a href="https://t.me/YOUR_BOT" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
-    تواصل عبر تلغرام
-  </a>
-</section>
-
-<footer class="bg-gray-900 text-gray-300 py-6 text-center">
-  © 2025 EduDZ – منصة تعليمية
+<!-- ================= FOOTER ================= -->
+<footer class="bg-gray-900 text-gray-300 py-8 text-center text-sm">
+  © 2025 EduDZ – منصة تعليمية جزائرية  
+  <p class="mt-2 text-gray-400">ابدأ اليوم، واصنع مستقبلك بنفسك</p>
 </footer>
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>AOS.init();</script>
+<script>
+  AOS.init({ duration: 800, once: true });
+</script>
 
 </body>
 </html>
