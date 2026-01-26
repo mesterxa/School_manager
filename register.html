@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>التسجيل في الدورة</title>
+  <title>إنشاء حساب | EduDZ</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,20 +16,22 @@
   </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 min-h-screen flex items-center justify-center px-4">
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen flex items-center justify-center px-4">
 
+  <!-- ================= CARD ================= -->
   <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
 
-    <!-- Title -->
-    <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">
-      التسجيل في الدورة
-    </h1>
+    <!-- Logo -->
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-black text-blue-600">EduDZ</h1>
+      <p class="text-gray-500 mt-2">التسجيل في الدورة</p>
+    </div>
 
     <p class="text-center text-gray-500 mb-8">
       املأ المعلومات بدقة للانضمام إلى الدروس
     </p>
 
-    <!-- Form -->
+    <!-- ================= FORM ================= -->
     <form id="registerForm" class="space-y-5">
 
       <!-- Name -->
@@ -83,16 +85,23 @@
 
     </form>
 
-    <!-- Back -->
-    <div class="text-center mt-6">
-      <a href="index.html" class="text-blue-600 hover:underline">
+    <!-- Links -->
+    <div class="text-center mt-6 text-sm text-gray-600">
+      لديك حساب بالفعل؟
+      <a href="login.html" class="text-blue-600 font-semibold hover:underline">
+        تسجيل الدخول
+      </a>
+    </div>
+
+    <div class="text-center mt-3 text-sm">
+      <a href="index.html" class="text-gray-500 hover:underline">
         ← العودة إلى الصفحة الرئيسية
       </a>
     </div>
 
   </div>
 
-  <!-- Simple Animation -->
+  <!-- ================= ANIMATION ================= -->
   <style>
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(20px); }
@@ -103,12 +112,12 @@
     }
   </style>
 
-  <!-- JS (مرحلي فقط) -->
+  <!-- ================= JS (مؤقت) ================= -->
   <script>
     document.getElementById("registerForm").addEventListener("submit", function(e){
       e.preventDefault();
-      // مؤقتًا نذهب لصفحة الدفع
-      window.location.href = "payment.html";
+      // مؤقتًا: تحويل إلى صفحة الدفع
+      window.location.href = "ccp.html";
     });
   </script>
 
