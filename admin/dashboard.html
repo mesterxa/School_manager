@@ -11,106 +11,125 @@
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
-
-<div class="min-h-screen flex">
+<body class="bg-gray-100 min-h-screen flex">
 
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-gray-200 flex flex-col">
-    <div class="p-6 text-center border-b border-gray-700">
+  <aside class="w-64 bg-gray-900 text-gray-100 flex flex-col fixed h-full">
+
+    <div class="p-6 border-b border-gray-800">
       <h1 class="text-2xl font-black text-blue-500">EduDZ</h1>
       <p class="text-sm text-gray-400 mt-1">لوحة الإدارة</p>
     </div>
 
     <nav class="flex-1 p-4 space-y-2 text-sm">
 
-      <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-gray-800">
-        <i data-lucide="layout-dashboard"></i>
-        الرئيسية
+      <a href="#" class="block px-4 py-2 rounded-lg bg-blue-600">
+        📊 نظرة عامة
       </a>
 
-      <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-800">
-        <i data-lucide="users"></i>
-        التلاميذ
+      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
+        👨‍🎓 التلاميذ
       </a>
 
-      <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-800">
-        <i data-lucide="credit-card"></i>
-        الدفوعات
+      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
+        💳 الدفوعات
       </a>
 
-      <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-800">
-        <i data-lucide="book-open"></i>
-        الدورات
+      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
+        📚 الدورات
       </a>
 
-      <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-800">
-        <i data-lucide="graduation-cap"></i>
-        الأساتذة
+      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
+        👨‍🏫 الأساتذة
       </a>
 
     </nav>
 
-    <div class="p-4 border-t border-gray-700">
-      <a href="../index.html"
-         class="block text-center text-sm text-gray-400 hover:text-white">
+    <div class="p-4 border-t border-gray-800">
+      <button
+        id="logoutBtn"
+        class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold text-sm">
         تسجيل الخروج
-      </a>
+      </button>
     </div>
+
   </aside>
 
   <!-- MAIN -->
-  <main class="flex-1 p-8">
+  <main class="flex-1 ml-64 p-8">
 
-    <h2 class="text-3xl font-bold mb-8">لوحة التحكم</h2>
+    <h2 class="text-3xl font-bold mb-8">مرحبا 👋</h2>
 
     <!-- STATS -->
-    <div class="grid md:grid-cols-4 gap-6 mb-10">
+    <section class="grid md:grid-cols-4 gap-6 mb-10">
 
       <div class="bg-white rounded-2xl shadow p-6">
         <p class="text-sm text-gray-500">عدد التلاميذ</p>
-        <p class="text-3xl font-bold mt-2">120</p>
+        <p class="text-3xl font-black text-blue-600 mt-2">128</p>
       </div>
 
       <div class="bg-white rounded-2xl shadow p-6">
-        <p class="text-sm text-gray-500">طلبات الدفع</p>
-        <p class="text-3xl font-bold mt-2">18</p>
+        <p class="text-sm text-gray-500">الدفوعات</p>
+        <p class="text-3xl font-black text-green-600 mt-2">96</p>
       </div>
 
       <div class="bg-white rounded-2xl shadow p-6">
         <p class="text-sm text-gray-500">الدورات</p>
-        <p class="text-3xl font-bold mt-2">6</p>
+        <p class="text-3xl font-black text-purple-600 mt-2">12</p>
       </div>
 
       <div class="bg-white rounded-2xl shadow p-6">
         <p class="text-sm text-gray-500">الأساتذة</p>
-        <p class="text-3xl font-bold mt-2">4</p>
+        <p class="text-3xl font-black text-orange-600 mt-2">7</p>
       </div>
 
-    </div>
+    </section>
 
-    <div class="bg-white rounded-2xl shadow p-6">
-      <h3 class="text-xl font-semibold mb-4">مرحبًا بك 👋</h3>
-      <p class="text-gray-600">
-        اختر قسمًا من القائمة الجانبية لإدارة المنصة.
-      </p>
-    </div>
+    <!-- PLACEHOLDER -->
+    <section class="bg-white rounded-2xl shadow p-8 text-center text-gray-500">
+      لوحة التحكم جاهزة ✅  
+      <br>
+      الخطوة القادمة: ربط Firestore وعرض البيانات الحقيقية
+    </section>
 
   </main>
 
-</div>
+  <!-- 🔐 FIREBASE AUTH PROTECTION -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-<script>
-  lucide.createIcons();
-</script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // 🔒 حماية الصفحة
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    // 🚪 تسجيل الخروج
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    });
+  </script>
 
 </body>
 </html>
