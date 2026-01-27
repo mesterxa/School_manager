@@ -1,135 +1,236 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة التحكم | EduDZ</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-
   <style>
     body { font-family: 'Inter', sans-serif; }
+    .hidden { display: none; }
   </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex">
+<body class="bg-gray-100 flex min-h-screen">
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-gray-100 flex flex-col fixed h-full">
+<!-- SIDEBAR -->
+<aside class="w-64 bg-gray-900 text-gray-100 flex flex-col fixed h-full">
+  <div class="p-6 border-b border-gray-800">
+    <h1 class="text-2xl font-black text-blue-500">EduDZ</h1>
+    <p class="text-sm text-gray-400 mt-1">لوحة الإدارة</p>
+  </div>
 
-    <div class="p-6 border-b border-gray-800">
-      <h1 class="text-2xl font-black text-blue-500">EduDZ</h1>
-      <p class="text-sm text-gray-400 mt-1">لوحة الإدارة</p>
-    </div>
+  <nav class="flex-1 p-4 space-y-2 text-sm">
+    <button class="block w-full text-left px-4 py-2 rounded-lg bg-blue-600 section-btn" data-section="overview">📊 نظرة عامة</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="teachers">👨‍🏫 الأساتذة</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="students">👨‍🎓 التلاميذ</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="payments">💳 الدفوعات</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="courses">📚 الدورات</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="posts">📝 المنشورات</button>
+    <button class="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 section-btn" data-section="attendance">📌 الحضور والدفوع</button>
+  </nav>
 
-    <nav class="flex-1 p-4 space-y-2 text-sm">
+  <div class="p-4 border-t border-gray-800">
+    <button id="logoutBtn" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold text-sm">
+      تسجيل الخروج
+    </button>
+  </div>
+</aside>
 
-      <a href="#" class="block px-4 py-2 rounded-lg bg-blue-600">
-        📊 نظرة عامة
-      </a>
+<!-- MAIN CONTENT -->
+<main class="flex-1 ml-64 p-8 space-y-6">
 
-      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
-        👨‍🎓 التلاميذ
-      </a>
-
-      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
-        💳 الدفوعات
-      </a>
-
-      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
-        📚 الدورات
-      </a>
-
-      <a href="#" class="block px-4 py-2 rounded-lg hover:bg-gray-800">
-        👨‍🏫 الأساتذة
-      </a>
-
-    </nav>
-
-    <div class="p-4 border-t border-gray-800">
-      <button
-        id="logoutBtn"
-        class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold text-sm">
-        تسجيل الخروج
-      </button>
-    </div>
-
-  </aside>
-
-  <!-- MAIN -->
-  <main class="flex-1 ml-64 p-8">
-
-    <h2 class="text-3xl font-bold mb-8">مرحبا 👋</h2>
-
-    <!-- STATS -->
-    <section class="grid md:grid-cols-4 gap-6 mb-10">
-
+  <!-- نظرة عامة -->
+  <section id="overview" class="section">
+    <h2 class="text-3xl font-bold mb-6">نظرة عامة 👋</h2>
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <p class="text-sm text-gray-500">عدد الأساتذة</p>
+        <p class="text-3xl font-black text-blue-600" id="totalTeachers">0</p>
+      </div>
       <div class="bg-white rounded-2xl shadow p-6">
         <p class="text-sm text-gray-500">عدد التلاميذ</p>
-        <p class="text-3xl font-black text-blue-600 mt-2">128</p>
+        <p class="text-3xl font-black text-green-600" id="totalStudents">0</p>
       </div>
-
       <div class="bg-white rounded-2xl shadow p-6">
         <p class="text-sm text-gray-500">الدفوعات</p>
-        <p class="text-3xl font-black text-green-600 mt-2">96</p>
+        <p class="text-3xl font-black text-purple-600" id="totalPayments">0</p>
       </div>
-
       <div class="bg-white rounded-2xl shadow p-6">
-        <p class="text-sm text-gray-500">الدورات</p>
-        <p class="text-3xl font-black text-purple-600 mt-2">12</p>
+        <p class="text-sm text-gray-500">عدد المنشورات</p>
+        <p class="text-3xl font-black text-orange-600" id="totalPosts">0</p>
       </div>
+    </div>
+  </section>
 
-      <div class="bg-white rounded-2xl shadow p-6">
-        <p class="text-sm text-gray-500">الأساتذة</p>
-        <p class="text-3xl font-black text-orange-600 mt-2">7</p>
-      </div>
+  <!-- الأساتذة -->
+  <section id="teachers" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">الأساتذة</h2>
+    <div id="teachersList" class="space-y-4"></div>
+  </section>
 
-    </section>
+  <!-- التلاميذ -->
+  <section id="students" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">التلاميذ</h2>
+    <div id="studentsList" class="space-y-4"></div>
+  </section>
 
-    <!-- PLACEHOLDER -->
-    <section class="bg-white rounded-2xl shadow p-8 text-center text-gray-500">
-      لوحة التحكم جاهزة ✅  
-      <br>
-      الخطوة القادمة: ربط Firestore وعرض البيانات الحقيقية
-    </section>
+  <!-- الدفوعات -->
+  <section id="payments" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">الدفوعات</h2>
+    <div id="paymentsList" class="space-y-4"></div>
+  </section>
 
-  </main>
+  <!-- الدورات -->
+  <section id="courses" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">الدورات</h2>
+    <div id="coursesList" class="space-y-4"></div>
+  </section>
 
-  <!-- 🔐 FIREBASE AUTH PROTECTION -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  <!-- المنشورات -->
+  <section id="posts" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">المنشورات</h2>
+    <div id="postsList" class="space-y-4"></div>
+  </section>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-      authDomain: "schoolmanager-1bab3.firebaseapp.com",
-      projectId: "schoolmanager-1bab3",
-      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-      messagingSenderId: "365294333627",
-      appId: "1:365294333627:web:b98978770a9e70adc7439e"
-    };
+  <!-- الحضور والدفوع الجزئية -->
+  <section id="attendance" class="section hidden">
+    <h2 class="text-3xl font-bold mb-4">📌 الحضور والدفوع الجزئية</h2>
+    <div id="attendanceList" class="space-y-4"></div>
+  </section>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+</main>
 
-    // 🔒 حماية الصفحة
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
-    });
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // 🚪 تسجيل الخروج
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
+// config
+const firebaseConfig = {
+  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+  authDomain: "schoolmanager-1bab3.firebaseapp.com",
+  projectId: "schoolmanager-1bab3",
+  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  messagingSenderId: "365294333627",
+  appId: "1:365294333627:web:b98978770a9e70adc7439e"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// حماية الصفحة
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    loadDashboard(user.uid);
+  }
+});
+
+// تسجيل الخروج
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(() => window.location.href = "login.html");
+});
+
+// Sidebar switch sections
+document.querySelectorAll(".section-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.section;
+    document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
+    document.getElementById(target).classList.remove("hidden");
+  });
+});
+
+// تحميل بيانات Dashboard
+async function loadDashboard(adminId) {
+  const teachersSnap = await getDocs(collection(db, "admins", adminId, "teachers"));
+  let totalTeachers = teachersSnap.size;
+  let totalStudents = 0;
+  let totalPayments = 0;
+  let totalPosts = 0;
+
+  const teachersList = document.getElementById("teachersList");
+  const studentsList = document.getElementById("studentsList");
+  const paymentsList = document.getElementById("paymentsList");
+  const postsList = document.getElementById("postsList");
+  const attendanceList = document.getElementById("attendanceList");
+
+  teachersList.innerHTML = studentsList.innerHTML = paymentsList.innerHTML = postsList.innerHTML = attendanceList.innerHTML = "";
+
+  for (const teacherDoc of teachersSnap.docs) {
+    const tData = teacherDoc.data();
+
+    // عرض Teacher
+    const tDiv = document.createElement("div");
+    tDiv.className = "bg-white p-4 rounded-xl shadow";
+    tDiv.textContent = `👨‍🏫 ${tData.name} - المادة: ${tData.subject}`;
+    teachersList.appendChild(tDiv);
+
+    // Students
+    const studentsSnap = await getDocs(collection(db, "admins", adminId, "teachers", teacherDoc.id, "students"));
+    totalStudents += studentsSnap.size;
+
+    for (const studentDoc of studentsSnap.docs) {
+      const sData = studentDoc.data();
+
+      // عرض Students
+      const sDiv = document.createElement("div");
+      sDiv.className = "bg-white p-3 rounded-lg shadow";
+      sDiv.textContent = `👨‍🎓 ${sData.name} - ${sData.level} - ${sData.phone}`;
+      studentsList.appendChild(sDiv);
+
+      // Payments لكل Student
+      const paymentsSnap = await getDocs(collection(db, "admins", adminId, "teachers", teacherDoc.id, "students", studentDoc.id, "payments"));
+      totalPayments += paymentsSnap.size;
+      paymentsSnap.forEach(pDoc => {
+        const pData = pDoc.data();
+        const pDiv = document.createElement("div");
+        pDiv.className = "bg-white p-3 rounded-lg shadow";
+        pDiv.textContent = `💳 ${pData.amount} دج - ${pData.status} - ${pData.date}`;
+        paymentsList.appendChild(pDiv);
       });
-    });
-  </script>
 
+      // Attendance
+      const attendanceSnap = await getDocs(collection(db, "admins", adminId, "teachers", teacherDoc.id, "students", studentDoc.id, "attendance"));
+      attendanceSnap.forEach(aDoc => {
+        const aData = aDoc.data();
+        const aDiv = document.createElement("div");
+        aDiv.className = "bg-white p-3 rounded-lg shadow";
+        aDiv.innerHTML = `
+          👨‍🎓 ${sData.name} | 📅 ${aData.date} | ${aData.sessionType} | الحالة: ${aData.status} <br>
+          💰 مدفوع: ${aData.paidAmount} دج | المتبقي: ${aData.remainingAmount} دج | طريقة الدفع: ${aData.paymentMethod}
+        `;
+        attendanceList.appendChild(aDiv);
+      });
+    }
+
+    // Posts لكل Teacher
+    const postsSnap = await getDocs(collection(db, "admins", adminId, "teachers", teacherDoc.id, "posts"));
+    totalPosts += postsSnap.size;
+    postsSnap.forEach(postDoc => {
+      const pData = postDoc.data();
+      const postDiv = document.createElement("div");
+      postDiv.className = "bg-white p-4 rounded-xl shadow";
+      postDiv.innerHTML = `
+        <h4 class="font-bold text-lg">${pData.title}</h4>
+        <p class="text-gray-600 mt-1">${pData.content}</p>
+        <p class="text-xs text-gray-400 mt-1">${pData.date}</p>
+      `;
+      postsList.appendChild(postDiv);
+    });
+  }
+
+  document.getElementById("totalTeachers").textContent = totalTeachers;
+  document.getElementById("totalStudents").textContent = totalStudents;
+  document.getElementById("totalPayments").textContent = totalPayments;
+  document.getElementById("totalPosts").textContent = totalPosts;
+}
+
+</script>
 </body>
 </html>
