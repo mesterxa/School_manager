@@ -57,12 +57,44 @@
 
   </div>
 
-  <!-- JS (مؤقت) -->
-  <script>
-    document.getElementById("adminLoginForm").addEventListener("submit", function(e){
+  <!-- Firebase JS -->
+  <script type="module">
+    // استدعاء Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // تكوين Firebase الخاص بك
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    // تهيئة Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // التعامل مع النموذج
+    const form = document.getElementById("adminLoginForm");
+
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
-      // مؤقتًا: دخول مباشر
-      window.location.href = "dashboard.html";
+
+      const email = form.querySelector('input[type="email"]').value;
+      const password = form.querySelector('input[type="password"]').value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          // تسجيل دخول ناجح → تحويل إلى dashboard
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("❌ بيانات الدخول غير صحيحة");
+          console.error(error);
+        });
     });
   </script>
 
