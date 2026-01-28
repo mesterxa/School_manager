@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Panel | School Manager</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Inter', sans-serif; }
+</style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+
+<header class="bg-black text-white py-4 px-6">
+  <h1 class="text-xl font-black">👑 Owner Control Panel</h1>
+  <p class="text-sm text-gray-300">طلبات الأدمن + CCP</p>
+</header>
+
+<main class="max-w-6xl mx-auto p-6">
+
+<section class="bg-white rounded-2xl shadow p-6">
+<h2 class="text-xl font-bold mb-6">طلبات الأدمن المعلقة</h2>
+
+<table class="w-full text-sm">
+<thead>
+<tr class="text-gray-500">
+  <th>الاسم</th>
+  <th>الإيميل</th>
+  <th>إثبات الدفع</th>
+  <th>الإجراء</th>
+</tr>
+</thead>
+<tbody id="adminsTable"></tbody>
+</table>
+
+</section>
+
+</main>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+  authDomain: "schoolmanager-1bab3.firebaseapp.com",
+  projectId: "schoolmanager-1bab3",
+  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  messagingSenderId: "365294333627",
+  appId: "1:365294333627:web:b98978770a9e70adc7439e"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/*
+⚠️ حماية الصفحة:
+ضع UID حسابك أنت هنا (Owner)
+*/
+const OWNER_UID = "PUT_YOUR_OWNER_UID_HERE";
+
+onAuthStateChanged(auth, user => {
+  if (!user || user.uid !== OWNER_UID) {
+    alert("🚫 غير مصرح لك");
+    location.href = "/";
+  }
+});
+
+const adminsTable = document.getElementById("adminsTable");
+
+onSnapshot(collection(db, "admins"), snap => {
+  adminsTable.innerHTML = "";
+  snap.forEach(docSnap => {
+    const a = docSnap.data();
+    if (a.status === "pending") {
+      adminsTable.innerHTML += `
+      <tr>
+        <td>${a.name}</td>
+        <td>${a.email}</td>
+        <td>
+          <a href="${a.paymentImage || '#'}" target="_blank"
+             class="text-blue-600 underline">
+             عرض الصورة
+          </a>
+        </td>
+        <td class="flex gap-2">
+          <button onclick="approve('${docSnap.id}')"
+            class="bg-green-600 text-white px-3 py-1 rounded">
+            قبول
+          </button>
+          <button onclick="reject('${docSnap.id}')"
+            class="bg-red-600 text-white px-3 py-1 rounded">
+            رفض
+          </button>
+        </td>
+      </tr>`;
+    }
+  });
+});
+
+window.approve = async id => {
+  await updateDoc(doc(db,"admins",id), { status:"active" });
+  alert("✅ تم التفعيل");
+};
+
+window.reject = async id => {
+  if(confirm("حذف الأدمن نهائيًا؟")){
+    await deleteDoc(doc(db,"admins",id));
+  }
+};
+</script>
+
+</body>
+</html>
