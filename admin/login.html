@@ -1,157 +1,97 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Login | School Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول – Admin | School Manager</title>
 
-  <style>
-    body{
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100vh;
-      margin:0;
-    }
-    .login-box{
-      background:#ffffff;
-      padding:30px;
-      width:100%;
-      max-width:400px;
-      border-radius:10px;
-      box-shadow:0 10px 25px rgba(0,0,0,0.3);
-    }
-    h2{
-      text-align:center;
-      margin-bottom:20px;
-      color:#1e293b;
-    }
-    input{
-      width:100%;
-      padding:12px;
-      margin-bottom:15px;
-      border-radius:6px;
-      border:1px solid #cbd5e1;
-      font-size:15px;
-    }
-    button{
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:6px;
-      background:#2563eb;
-      color:white;
-      font-size:16px;
-      cursor:pointer;
-    }
-    button:hover{
-      background:#1e40af;
-    }
-    .msg{
-      margin-top:15px;
-      text-align:center;
-      font-size:14px;
-    }
-    .error{ color:#dc2626; }
-    .info{ color:#ca8a04; }
-  </style>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.loginAdmin = async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // جلب بيانات الأدمن من Firestore
+        const adminDoc = await getDoc(doc(db, "admins", user.uid));
+
+        if (!adminDoc.exists()) {
+          alert("🚫 هذا الحساب غير موجود في قاعدة الأدمنات");
+          return;
+        }
+
+        const adminData = adminDoc.data();
+
+        if (adminData.status !== "approved") {
+          alert("⛔ لم يتم الموافقة على حسابك بعد أو تم رفضه");
+          return;
+        }
+
+        // تسجيل الدخول ناجح → الانتقال للـ Dashboard
+        window.location.href = "/admin/dashboard.html";
+
+      } catch (error) {
+        console.error(error);
+        alert("❌ خطأ في البريد أو كلمة المرور");
+      }
+    };
+  </script>
 </head>
 
-<body>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
 
-<div class="login-box">
-  <h2>تسجيل دخول الأدمن</h2>
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">تسجيل الدخول للأدمن</h1>
 
-  <input type="email" id="email" placeholder="البريد الإلكتروني" />
-  <input type="password" id="password" placeholder="كلمة المرور" />
+    <form onsubmit="loginAdmin(event)" class="space-y-5">
+      <div>
+        <label class="block mb-1 font-semibold">البريد الإلكتروني</label>
+        <input type="email" id="email" required
+          class="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
 
-  <button onclick="login()">دخول</button>
+      <div>
+        <label class="block mb-1 font-semibold">كلمة المرور</label>
+        <input type="password" id="password" required
+          class="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
 
-  <div id="message" class="msg"></div>
-</div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+        تسجيل الدخول
+      </button>
+    </form>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <p class="mt-4 text-center text-gray-500 text-sm">
+      إذا لم يتم الموافقة على حسابك بعد، يرجى التواصل مع Owner.
+    </p>
 
-  // 🔥 Firebase Config (كما أرسلته أنت)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-    authDomain: "schoolmanager-1bab3.firebaseapp.com",
-    projectId: "schoolmanager-1bab3",
-    storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-    messagingSenderId: "365294333627",
-    appId: "1:365294333627:web:b98978770a9e70adc7439e",
-    measurementId: "G-2SJ8067MHH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  window.login = async function () {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const msg = document.getElementById("message");
-
-    msg.textContent = "";
-    msg.className = "msg";
-
-    if(!email || !password){
-      msg.textContent = "يرجى إدخال البريد وكلمة المرور";
-      msg.classList.add("error");
-      return;
-    }
-
-    try{
-      // 1️⃣ Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
-
-      // 2️⃣ Firestore check
-      const adminRef = doc(db, "admins", uid);
-      const adminSnap = await getDoc(adminRef);
-
-      if(!adminSnap.exists()){
-        msg.textContent = "هذا الحساب غير مسجل كأدمن";
-        msg.classList.add("error");
-        return;
-      }
-
-      const adminData = adminSnap.data();
-
-      // 3️⃣ شروط الدخول
-      if(adminData.role !== "admin"){
-        msg.textContent = "ليس لديك صلاحيات أدمن";
-        msg.classList.add("error");
-        return;
-      }
-
-      if(adminData.status === "pending"){
-        msg.textContent = "حسابك في انتظار موافقة المالك";
-        msg.classList.add("info");
-        return;
-      }
-
-      if(adminData.status !== "active"){
-        msg.textContent = "تم رفض أو تعطيل هذا الحساب";
-        msg.classList.add("error");
-        return;
-      }
-
-      // ✅ نجاح
-      window.location.href = "dashboard.html";
-
-    }catch(error){
-      msg.textContent = "خطأ في البريد أو كلمة المرور";
-      msg.classList.add("error");
-    }
-  };
-</script>
+  </div>
 
 </body>
 </html>
