@@ -3,116 +3,167 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة المالك | School Manager</title>
+<title>Owner Dashboard – EduDZ</title>
 <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
 
-<div class="max-w-6xl mx-auto p-6">
-
-  <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">طلبات الأدمن الجديدة</h1>
-
-  <div id="requestsContainer" class="space-y-4">
-    <!-- هنا ستظهر الطلبات -->
-  </div>
-
-</div>
-
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
   projectId: "schoolmanager-1bab3",
-  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  storageBucket: "schoolmanager-1bab3.appspot.com",
   messagingSenderId: "365294333627",
   appId: "1:365294333627:web:b98978770a9e70adc7439e"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-const requestsContainer = document.getElementById("requestsContainer");
+// Telegram
+const telegramBotToken = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
+const telegramChatId = "6858411980";
 
-// تحميل الطلبات
-async function loadRequests() {
-  requestsContainer.innerHTML = "جاري تحميل الطلبات...";
-  const snapshot = await getDocs(collection(db, "admins_requests"));
-  requestsContainer.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
+// جلب طلبات الأدمن
+async function loadAdminRequests() {
+  const container = document.getElementById("requestsContainer");
+  container.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "admin_requests"));
+  snapshot.forEach(async (docSnap) => {
     const data = docSnap.data();
-    const docId = docSnap.id;
-
-    const card = document.createElement("div");
-    card.className = "bg-white p-4 rounded-2xl shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
-
-    const info = document.createElement("div");
-    info.innerHTML = `
-      <p><strong>الاسم:</strong> ${data.fullName}</p>
-      <p><strong>البريد:</strong> ${data.email}</p>
-      <p><strong>الهاتف:</strong> ${data.phone}</p>
-      <p><strong>تاريخ الطلب:</strong> ${data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : ''}</p>
-      ${data.paymentPhotoUrl ? `<img src="${data.paymentPhotoUrl}" class="mt-2 w-40 rounded shadow" />` : ''}
+    const requestId = docSnap.id;
+    let receiptUrl = "";
+    if(data.receiptPath){
+      receiptUrl = await getDownloadURL(ref(storage, data.receiptPath));
+    }
+    container.innerHTML += `
+      <div class="border p-4 rounded mb-4 bg-white shadow">
+        <p><strong>الاسم:</strong> ${data.name}</p>
+        <p><strong>الإيميل:</strong> ${data.email}</p>
+        <p><strong>رقم الهاتف:</strong> ${data.phone || "-"}</p>
+        <p><strong>اسم المدرسة:</strong> ${data.schoolName}</p>
+        ${receiptUrl ? `<img src="${receiptUrl}" class="w-40 mt-2 rounded shadow">` : ""}
+        <div class="mt-2 flex gap-2">
+          <button onclick="approveRequest('${requestId}', '${data.name}', '${data.email}', '${data.schoolName}')" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">قبول</button>
+          <button onclick="rejectRequest('${requestId}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">رفض</button>
+        </div>
+      </div>
     `;
-
-    const actions = document.createElement("div");
-    actions.className = "flex gap-2";
-
-    // زر قبول
-    const acceptBtn = document.createElement("button");
-    acceptBtn.className = "bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700";
-    acceptBtn.textContent = "قبول";
-    acceptBtn.onclick = async () => {
-      try {
-        await addDoc(collection(db, "admins"), {
-          fullName: data.fullName,
-          email: data.email,
-          phone: data.phone,
-          createdAt: serverTimestamp(),
-          approvedByOwner: true
-        });
-        await deleteDoc(doc(db, "admins_requests", docId));
-        alert(`✅ تم قبول ${data.fullName}`);
-        loadRequests();
-      } catch (err) {
-        console.error(err);
-        alert("❌ حدث خطأ أثناء قبول الطلب");
-      }
-    };
-
-    // زر رفض
-    const rejectBtn = document.createElement("button");
-    rejectBtn.className = "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700";
-    rejectBtn.textContent = "رفض";
-    rejectBtn.onclick = async () => {
-      try {
-        await deleteDoc(doc(db, "admins_requests", docId));
-        alert(`❌ تم رفض ${data.fullName}`);
-        loadRequests();
-      } catch (err) {
-        console.error(err);
-        alert("❌ حدث خطأ أثناء رفض الطلب");
-      }
-    };
-
-    actions.appendChild(acceptBtn);
-    actions.appendChild(rejectBtn);
-
-    card.appendChild(info);
-    card.appendChild(actions);
-
-    requestsContainer.appendChild(card);
   });
-
-  if (snapshot.empty) requestsContainer.innerHTML = "<p class='text-gray-500 text-center'>لا توجد طلبات جديدة</p>";
 }
 
-loadRequests();
+// قبول الطلب
+async function approveRequest(id, name, email, schoolName){
+  try{
+    // إنشاء أدمن جديد
+    await addDoc(collection(db, "admins"), {
+      name, email, schoolName, createdAt: new Date(), password: "123456" // كلمة مرور افتراضية
+    });
+
+    // إرسال إشعار للـ Telegram
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({chat_id: telegramChatId, text:`تم قبول طلب الأدمن:\nالاسم: ${name}\nالبريد: ${email}\nالمدرسة: ${schoolName}`})
+    });
+
+    // حذف الطلب
+    await deleteDoc(doc(db, "admin_requests", id));
+    alert("✅ تم قبول الطلب وإضافة الأدمن");
+    loadAdminRequests();
+  }catch(err){console.error(err);}
+}
+
+// رفض الطلب
+async function rejectRequest(id){
+  if(confirm("هل أنت متأكد من رفض هذا الطلب؟")){
+    await deleteDoc(doc(db, "admin_requests", id));
+    alert("تم رفض الطلب");
+    loadAdminRequests();
+  }
+}
+
+// إضافة أدمن يدوي
+async function addAdminManually(){
+  const name = document.getElementById("manualName").value.trim();
+  const email = document.getElementById("manualEmail").value.trim();
+  const phone = document.getElementById("manualPhone").value.trim();
+  const schoolName = document.getElementById("manualSchool").value.trim();
+  const password = document.getElementById("manualPassword").value.trim();
+
+  if(!name || !email || !schoolName || !password){ alert("املأ جميع الحقول"); return; }
+
+  await addDoc(collection(db, "admins"), {name, email, phone, schoolName, password, createdAt: new Date()});
+  alert("✅ تم إضافة الأدمن يدوياً");
+  document.getElementById("manualForm").reset();
+  loadAdmins();
+}
+
+// تحميل قائمة الأدمن الحاليين
+async function loadAdmins(){
+  const container = document.getElementById("adminsContainer");
+  container.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "admins"));
+  snapshot.forEach((docSnap)=>{
+    const data = docSnap.data();
+    const adminId = docSnap.id;
+    container.innerHTML += `
+      <div class="border p-2 rounded mb-2 bg-gray-50 flex justify-between items-center">
+        <span>${data.name} (${data.schoolName})</span>
+        <button onclick="deleteAdmin('${adminId}')" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">حذف</button>
+      </div>
+    `;
+  });
+}
+
+// حذف أدمن
+async function deleteAdmin(id){
+  if(confirm("هل تريد حذف هذا الأدمن؟")){
+    await deleteDoc(doc(db, "admins", id));
+    loadAdmins();
+  }
+}
+
+// تحميل البيانات عند الفتح
+window.onload = function(){
+  loadAdminRequests();
+  loadAdmins();
+};
 </script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+
+<h1 class="text-2xl font-bold mb-6">لوحة المالك – إدارة الأدمن</h1>
+
+<!-- قسم طلبات الأدمن -->
+<section class="mb-8">
+  <h2 class="text-xl font-bold mb-4">طلبات الأدمن الجديدة</h2>
+  <div id="requestsContainer"></div>
+</section>
+
+<!-- قسم إضافة أدمن يدوي -->
+<section class="mb-8 bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-bold mb-4">إضافة أدمن يدوي</h2>
+  <form id="manualForm" onsubmit="event.preventDefault(); addAdminManually();">
+    <input type="text" id="manualName" placeholder="الاسم الكامل" class="border p-2 rounded mb-2 w-full">
+    <input type="email" id="manualEmail" placeholder="البريد الإلكتروني" class="border p-2 rounded mb-2 w-full">
+    <input type="tel" id="manualPhone" placeholder="رقم الهاتف" class="border p-2 rounded mb-2 w-full">
+    <input type="text" id="manualSchool" placeholder="اسم المدرسة" class="border p-2 rounded mb-2 w-full">
+    <input type="text" id="manualPassword" placeholder="كلمة المرور" class="border p-2 rounded mb-2 w-full">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">إضافة الأدمن</button>
+  </form>
+</section>
+
+<!-- قائمة الأدمن الحاليين -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-bold mb-4">الأدمن الحاليين</h2>
+  <div id="adminsContainer"></div>
+</section>
 
 </body>
 </html>
