@@ -3,13 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Owner Dashboard | School Manager</title>
+<title>لوحة تحكم المالك</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // Firebase Config
@@ -25,11 +33,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// عناصر الجدول والنموذج
 const adminsTable = document.getElementById("adminsTable");
 const requestsTable = document.getElementById("requestsTable");
 const addForm = document.getElementById("addForm");
 
-// تحميل الأدمنز
+// ====== تحميل الأدمنز ======
 async function loadAdmins() {
   adminsTable.innerHTML = "";
   const snapshot = await getDocs(collection(db, "admins"));
@@ -43,7 +52,7 @@ async function loadAdmins() {
       <td class="px-4 py-2">${data.phone}</td>
       <td class="px-4 py-2">${data.schoolName}</td>
       <td class="px-4 py-2">
-        <button data-id="${docSnap.id}" class="deleteBtn bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">حذف</button>
+        <button data-id="${docSnap.id}" class="deleteBtn bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">حذف</button>
       </td>
     `;
     adminsTable.appendChild(tr);
@@ -60,7 +69,7 @@ async function loadAdmins() {
   });
 }
 
-// تحميل طلبات التسجيل
+// ====== تحميل طلبات التسجيل ======
 async function loadRequests() {
   requestsTable.innerHTML = "";
   const snapshot = await getDocs(collection(db, "admin_requests"));
@@ -73,9 +82,9 @@ async function loadRequests() {
       <td class="px-4 py-2">${data.email}</td>
       <td class="px-4 py-2">${data.phone}</td>
       <td class="px-4 py-2">${data.schoolName}</td>
-      <td class="px-4 py-2 flex gap-2">
-        <button data-id="${docSnap.id}" class="approveBtn bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">قبول</button>
-        <button data-id="${docSnap.id}" class="rejectBtn bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500">رفض</button>
+      <td class="px-4 py-2">
+        <button data-id="${docSnap.id}" class="approveBtn bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">قبول</button>
+        <button data-id="${docSnap.id}" class="rejectBtn bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500">رفض</button>
       </td>
     `;
     requestsTable.appendChild(tr);
@@ -86,22 +95,39 @@ async function loadRequests() {
     btn.addEventListener("click", async e => {
       const id = e.target.dataset.id;
       const requestRef = doc(db, "admin_requests", id);
-      const requestSnap = await getDocs(collection(db, "admin_requests"));
-      const dataDoc = await requestRef.get?.() || { data: () => null };
-      const data = dataDoc.data();
-      if (!data || !data.password) return alert("كلمة المرور مفقودة!");
-      await addDoc(collection(db, "admins"), {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-        schoolName: data.schoolName,
-        createdAt: serverTimestamp()
-      });
-      await updateDoc(requestRef, { approved: true });
-      alert("تم قبول الأدمن ✅");
-      loadAdmins();
-      loadRequests();
+      const requestSnap = await getDoc(requestRef);
+
+      if (!requestSnap.exists()) {
+        alert("❌ الطلب غير موجود");
+        return;
+      }
+
+      const data = requestSnap.data();
+      const { name, email, phone, schoolName, password } = data;
+
+      if (!password) {
+        alert("⚠️ كلمة المرور غير موجودة في الطلب!");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "admins"), {
+          name,
+          email,
+          phone,
+          password,
+          schoolName,
+          createdAt: serverTimestamp()
+        });
+
+        await updateDoc(requestRef, { approved: true });
+        alert("✅ تم قبول الأدمن بنجاح");
+        loadAdmins();
+        loadRequests();
+      } catch(err) {
+        console.error(err);
+        alert("❌ حدث خطأ أثناء إضافة الأدمن");
+      }
     });
   });
 
@@ -117,7 +143,7 @@ async function loadRequests() {
   });
 }
 
-// إضافة أدمن يدويًا
+// ====== إضافة أدمن يدويًا ======
 addForm.addEventListener("submit", async e => {
   e.preventDefault();
   const name = addForm.name.value.trim();
@@ -126,19 +152,25 @@ addForm.addEventListener("submit", async e => {
   const password = addForm.password.value.trim();
   const school = addForm.school.value.trim();
 
-  if (!name || !email || !phone || !password || !school) return alert("يرجى ملء جميع الحقول");
+  if (!name || !email || !phone || !password || !school) {
+    alert("يرجى ملء جميع الحقول");
+    return;
+  }
 
   try {
-    await addDoc(collection(db, "admins"), { name, email, phone, password, schoolName: school, createdAt: serverTimestamp() });
-    alert("تم إضافة الأدمن بنجاح ✅");
+    await addDoc(collection(db, "admins"), {
+      name, email, phone, password, schoolName: school, createdAt: serverTimestamp()
+    });
+    alert("✅ تم إضافة الأدمن بنجاح");
     addForm.reset();
     loadAdmins();
   } catch(err) {
     console.error(err);
-    alert("حدث خطأ أثناء إضافة الأدمن ❌");
+    alert("❌ حدث خطأ أثناء إضافة الأدمن");
   }
 });
 
+// عند تحميل الصفحة
 window.onload = () => {
   loadAdmins();
   loadRequests();
@@ -152,8 +184,8 @@ window.onload = () => {
 <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">لوحة تحكم المالك</h1>
 
 <!-- إضافة أدمن يدويًا -->
-<div class="mb-8">
-  <h2 class="font-bold mb-3 text-lg">إضافة أدمن جديد يدويًا</h2>
+<div class="mb-6">
+  <h2 class="font-bold mb-2">إضافة أدمن جديد يدويًا</h2>
   <form id="addForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <input name="name" placeholder="الاسم الكامل" class="p-2 border rounded">
     <input name="email" type="email" placeholder="البريد الإلكتروني" class="p-2 border rounded">
@@ -165,7 +197,7 @@ window.onload = () => {
 </div>
 
 <!-- جدول الأدمنز -->
-<h2 class="font-bold mb-3 text-lg">قائمة الأدمنز</h2>
+<h2 class="font-bold mb-2">قائمة الأدمنز</h2>
 <table class="w-full border-collapse text-right mb-6">
   <thead class="bg-gray-100">
     <tr>
@@ -180,7 +212,7 @@ window.onload = () => {
 </table>
 
 <!-- جدول طلبات التسجيل -->
-<h2 class="font-bold mb-3 text-lg">طلبات تسجيل الأدمن</h2>
+<h2 class="font-bold mb-2">طلبات تسجيل الأدمن</h2>
 <table class="w-full border-collapse text-right">
   <thead class="bg-gray-100">
     <tr>
