@@ -1,134 +1,126 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل أدمن جديد | EduDZ</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل أدمن جديد | School Manager</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
 
-  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+<div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
 
-    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
-
-    <form id="admin-form" class="space-y-4">
-
-      <!-- الاسم الكامل -->
-      <div>
-        <label class="block mb-1 font-semibold">الاسم الكامل</label>
-        <input type="text" id="name" placeholder="مثال: محمد أحمد"
-          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-
-      <!-- البريد الإلكتروني -->
-      <div>
-        <label class="block mb-1 font-semibold">البريد الإلكتروني</label>
-        <input type="email" id="email" placeholder="example@mail.com"
-          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-
-      <!-- رقم الهاتف -->
-      <div>
-        <label class="block mb-1 font-semibold">رقم الهاتف</label>
-        <input type="tel" id="phone" placeholder="05xxxxxxxx"
-          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-
-      <!-- اسم المدرسة -->
-      <div>
-        <label class="block mb-1 font-semibold">اسم المدرسة</label>
-        <input type="text" id="school" placeholder="مثال: مدرسة النور"
-          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-
-      <!-- زر إرسال الطلب -->
-      <button type="submit"
-        class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
-        إرسال الطلب
-      </button>
-
-    </form>
-
-    <!-- رسالة ترحيب -->
-    <div id="welcome-message"
-      class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center">
+  <form id="adminForm" class="space-y-4">
+    <div>
+      <label class="block mb-1 font-semibold">الاسم الكامل</label>
+      <input type="text" id="fullName" required class="w-full p-2 border rounded" placeholder="مثال: محمد أحمد">
     </div>
 
+    <div>
+      <label class="block mb-1 font-semibold">البريد الإلكتروني</label>
+      <input type="email" id="email" required class="w-full p-2 border rounded" placeholder="مثال: example@mail.com">
+    </div>
+
+    <div>
+      <label class="block mb-1 font-semibold">رقم الهاتف</label>
+      <input type="tel" id="phone" required class="w-full p-2 border rounded" placeholder="05xxxxxxxx">
+    </div>
+
+    <div>
+      <label class="block mb-1 font-semibold">صورة الوصل (CCP)</label>
+      <input type="file" id="paymentPhoto" accept="image/*" required class="w-full p-2 border rounded">
+    </div>
+
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">تسجيل</button>
+  </form>
+
+  <div id="waitingMessage" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 rounded text-center">
+    ⏳ جاري معالجة طلبك، يرجى الانتظار...
   </div>
+</div>
 
-  <!-- Firebase + JS -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module">
+// Firebase (Firestore فقط لتخزين الطلب)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // إعدادات Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-      authDomain: "schoolmanager-1bab3.firebaseapp.com",
-      projectId: "schoolmanager-1bab3",
-      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-      messagingSenderId: "365294333627",
-      appId: "1:365294333627:web:b98978770a9e70adc7439e"
-    };
+// إعداد Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+  authDomain: "schoolmanager-1bab3.firebaseapp.com",
+  projectId: "schoolmanager-1bab3",
+  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  messagingSenderId: "365294333627",
+  appId: "1:365294333627:web:b98978770a9e70adc7439e"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+// Telegram
+const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
+const TELEGRAM_CHAT_ID = "6858411980";
 
-    const OWNER_BOT_TOKEN = "8258052427:AAEaIR2c1JCwcJ0POjn8FfyvZ2dqJyhCTIs"; // بوت المالك
-    const OWNER_CHAT_ID = "YOUR_OWNER_CHAT_ID"; // ضع هنا chat_id الخاص بالمالك
+// Form handler
+document.getElementById("adminForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const form = document.getElementById("admin-form");
-    const messageBox = document.getElementById("welcome-message");
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const photo = document.getElementById("paymentPhoto").files[0];
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  if (!fullName || !email || !phone || !photo) return alert("⚠️ يرجى ملء جميع الحقول");
 
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const school = document.getElementById("school").value.trim();
+  // إظهار رسالة الانتظار
+  const waiting = document.getElementById("waitingMessage");
+  waiting.classList.remove("hidden");
 
-      if (!name || !email || !phone || !school) {
-        alert("⚠️ الرجاء إدخال جميع الحقول");
-        return;
-      }
+  try {
+    // رفع الطلب إلى Firestore
+    const formData = new FormData();
+    formData.append("file", photo);
+    formData.append("upload_preset", "schoolmanager"); // يمكن استخدام Cloudinary أو Firebase Storage لاحقًا
 
-      try {
-        // حفظ الطلب في Firestore
-        await addDoc(collection(db, "admins_requests"), {
-          name,
-          email,
-          phone,
-          schoolName: school,
-          createdAt: new Date()
-        });
-
-        // رسالة ترحيب للأدمن
-        messageBox.innerHTML = `
-          مرحبًا <strong>${name}</strong> 👋<br>
-          تم استلام طلبك لإدارة <strong>${school}</strong>.<br>
-          سيتم مراجعته من طرف المالك قريبًا ✅
-        `;
-        messageBox.classList.remove("hidden");
-        form.reset();
-
-        // إرسال إشعار للمالك عبر Telegram bot
-        fetch(`https://api.telegram.org/bot${OWNER_BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: OWNER_CHAT_ID,
-            text: `📢 طلب أدمن جديد:\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nالمدرسة: ${school}`
-          })
-        });
-
-      } catch (err) {
-        console.error("خطأ في إرسال الطلب:", err);
-        alert("❌ حدث خطأ، حاول مرة أخرى");
-      }
+    // إرسال إلى Firestore
+    await addDoc(collection(db, "admins_requests"), {
+      fullName,
+      email,
+      phone,
+      createdAt: serverTimestamp()
     });
-  </script>
+
+    // إرسال إلى Telegram
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result.split(",")[1]; // إزالة البادئة data:image/...
+      const caption = `📌 طلب أدمن جديد\n\nالاسم: ${fullName}\nالبريد: ${email}\nالهاتف: ${phone}`;
+      
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          photo: `data:${photo.type};base64,${base64}`,
+          caption
+        })
+      });
+    };
+    reader.readAsDataURL(photo);
+
+    // رسالة مؤقتة وانتقال بعد 2 ثانية
+    setTimeout(() => {
+      alert("✅ تم إرسال طلبك للمالك. سيتم مراجعته قريبًا!");
+      window.location.href = "../index.html"; // العودة للصفحة الرئيسية
+    }, 2000);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ حدث خطأ أثناء التسجيل. حاول مرة أخرى.");
+    waiting.classList.add("hidden");
+  }
+});
+</script>
 
 </body>
 </html>
