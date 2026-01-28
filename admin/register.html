@@ -11,7 +11,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// ===== Firebase Config =====
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
@@ -24,11 +24,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ===== Telegram Config =====
+// Telegram
 const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
 const TELEGRAM_CHAT_ID = "6858411980";
 
-// ===== تسجيل الأدمن =====
 window.registerAdmin = async () => {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -44,26 +43,22 @@ window.registerAdmin = async () => {
   }
 
   try {
-    // رفع الصورة إلى Firebase Storage
+    // رفع صورة الدفع
     const storageRef = ref(storage, `payment_photos/${Date.now()}_${photo.name}`);
     await uploadBytes(storageRef, photo);
     const photoUrl = await getDownloadURL(storageRef);
 
     // إضافة الطلب إلى Firestore
     await addDoc(collection(db, "admin_requests"), {
-      name,
-      "e-mail": email,
-      phone,
-      password,
-      schoolName: school,
+      name, email, phone, password, schoolName: school,
       paymentPhotoUrl: photoUrl,
       approved: false,
       createdAt: serverTimestamp()
     });
 
-    // إرسال البيانات مع الصورة للبوت على Telegram
+    // إرسال البيانات للبوت
     const telegramMessage = `
-📢 طلب أدمن جديد:
+طلب أدمن جديد:
 الاسم: ${name}
 البريد: ${email}
 الهاتف: ${phone}
@@ -76,7 +71,6 @@ window.registerAdmin = async () => {
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage })
     });
 
-    // رسالة ترحيب وانتظار
     messageBox.innerHTML = `
       مرحبًا <strong>${name}</strong> 👋<br>
       تم إرسال طلبك لإدارة <strong>${school}</strong>.<br>
@@ -98,36 +92,12 @@ window.registerAdmin = async () => {
   <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
 
   <form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();">
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">الاسم الكامل</label>
-      <input type="text" id="name" class="w-full p-2 border rounded" placeholder="أدخل الاسم">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">البريد الإلكتروني</label>
-      <input type="email" id="email" class="w-full p-2 border rounded" placeholder="أدخل البريد">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">رقم الهاتف</label>
-      <input type="tel" id="phone" class="w-full p-2 border rounded" placeholder="05xxxxxxxx">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">كلمة المرور</label>
-      <input type="password" id="password" class="w-full p-2 border rounded" placeholder="أدخل كلمة المرور">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">اسم المدرسة</label>
-      <input type="text" id="school" class="w-full p-2 border rounded" placeholder="مثال: مدرسة النور">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">صورة وصل الدفع (CCP)</label>
-      <input type="file" id="photo" accept="image/*" class="w-full p-2 border rounded">
-    </div>
-
+    <div class="mb-4"><label>الاسم الكامل</label><input type="text" id="name" class="w-full p-2 border rounded"></div>
+    <div class="mb-4"><label>البريد الإلكتروني</label><input type="email" id="email" class="w-full p-2 border rounded"></div>
+    <div class="mb-4"><label>رقم الهاتف</label><input type="tel" id="phone" class="w-full p-2 border rounded"></div>
+    <div class="mb-4"><label>كلمة المرور</label><input type="password" id="password" class="w-full p-2 border rounded"></div>
+    <div class="mb-4"><label>اسم المدرسة</label><input type="text" id="school" class="w-full p-2 border rounded"></div>
+    <div class="mb-4"><label>صورة وصل الدفع</label><input type="file" id="photo" accept="image/*" class="w-full p-2 border rounded"></div>
     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">إرسال الطلب</button>
   </form>
 
