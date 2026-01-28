@@ -7,11 +7,21 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script type="module">
+/* ================= Firebase ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { 
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
@@ -20,15 +30,16 @@ const firebaseConfig = {
   messagingSenderId: "365294333627",
   appId: "1:365294333627:web:b98978770a9e70adc7439e"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Telegram
+/* ================= Telegram ================= */
 const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
 const TELEGRAM_CHAT_ID = "6858411980";
 
-// تسجيل الأدمن
+/* ================= Register ================= */
 window.registerAdmin = async () => {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -36,7 +47,7 @@ window.registerAdmin = async () => {
   const password = document.getElementById("password").value.trim();
   const school = document.getElementById("school").value.trim();
   const photo = document.getElementById("photo").files[0];
-  const messageBox = document.getElementById("welcome-message");
+  const msgBox = document.getElementById("welcome-message");
 
   if (!name || !email || !phone || !password || !school || !photo) {
     alert("⚠️ الرجاء ملء جميع الحقول وإرفاق صورة الوصل");
@@ -44,45 +55,53 @@ window.registerAdmin = async () => {
   }
 
   try {
-    // رفع الصورة إلى Firebase Storage
-    const storageRef = ref(storage, `payment_photos/${Date.now()}_${photo.name}`);
-    await uploadBytes(storageRef, photo);
-    const photoUrl = await getDownloadURL(storageRef);
+    /* رفع الصورة */
+    const photoRef = ref(storage, `payment_photos/${Date.now()}_${photo.name}`);
+    await uploadBytes(photoRef, photo);
+    const photoUrl = await getDownloadURL(photoRef);
 
-    // إضافة الطلب إلى Firestore
+    /* حفظ الطلب */
     await addDoc(collection(db, "admin_requests"), {
-      name, email, phone, password, schoolName: school,
+      name: name,
+      email: email,
+      phone: phone,
+      password: password,
+      schoolName: school,
       paymentPhotoUrl: photoUrl,
       approved: false,
       createdAt: serverTimestamp()
     });
 
-    // إرسال البيانات مع الصورة للبوت على Telegram
-    const telegramMessage = `
-طلب أدمن جديد:
-الاسم: ${name}
-البريد: ${email}
-الهاتف: ${phone}
-المدرسة: ${school}
-صورة الوصل: ${photoUrl}
-    `;
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    /* إرسال الصورة + المعلومات إلى Telegram */
+    const caption =
+`🆕 طلب أدمن جديد
+
+👤 الاسم: ${name}
+📧 البريد: ${email}
+📞 الهاتف: ${phone}
+🏫 المدرسة: ${school}`;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage })
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        photo: photoUrl,
+        caption: caption
+      })
     });
 
-    // رسالة ترحيب وانتظار
-    messageBox.innerHTML = `
+    /* واجهة المستخدم */
+    msgBox.innerHTML = `
       مرحبًا <strong>${name}</strong> 👋<br>
-      تم إرسال طلبك لإدارة <strong>${school}</strong>.<br>
+      تم إرسال طلبك بنجاح.<br>
       سيتم مراجعته من طرف المالك قريبًا ✅
     `;
-    messageBox.classList.remove("hidden");
+    msgBox.classList.remove("hidden");
     document.getElementById("admin-form").reset();
 
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     alert("❌ حدث خطأ أثناء إرسال الطلب");
   }
 };
@@ -91,43 +110,52 @@ window.registerAdmin = async () => {
 
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
 <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
 
-  <form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();">
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">الاسم الكامل</label>
-      <input type="text" id="name" class="w-full p-2 border rounded" placeholder="أدخل الاسم">
-    </div>
+<h1 class="text-2xl font-bold mb-6 text-center text-blue-600">
+تسجيل أدمن جديد
+</h1>
 
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">البريد الإلكتروني</label>
-      <input type="email" id="email" class="w-full p-2 border rounded" placeholder="أدخل البريد">
-    </div>
+<form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();">
 
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">رقم الهاتف</label>
-      <input type="tel" id="phone" class="w-full p-2 border rounded" placeholder="05xxxxxxxx">
-    </div>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">الاسم الكامل</label>
+    <input id="name" class="w-full p-2 border rounded">
+  </div>
 
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">كلمة المرور</label>
-      <input type="password" id="password" class="w-full p-2 border rounded" placeholder="أدخل كلمة المرور">
-    </div>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">البريد الإلكتروني</label>
+    <input id="email" type="email" class="w-full p-2 border rounded">
+  </div>
 
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">اسم المدرسة</label>
-      <input type="text" id="school" class="w-full p-2 border rounded" placeholder="مثال: مدرسة النور">
-    </div>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">رقم الهاتف</label>
+    <input id="phone" class="w-full p-2 border rounded">
+  </div>
 
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">صورة وصل الدفع (CCP)</label>
-      <input type="file" id="photo" accept="image/*" class="w-full p-2 border rounded">
-    </div>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">كلمة المرور</label>
+    <input id="password" type="password" class="w-full p-2 border rounded">
+  </div>
 
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">إرسال الطلب</button>
-  </form>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">اسم المدرسة</label>
+    <input id="school" class="w-full p-2 border rounded">
+  </div>
 
-  <div id="welcome-message" class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center"></div>
+  <div class="mb-4">
+    <label class="block mb-2 font-bold">صورة وصل الدفع</label>
+    <input id="photo" type="file" accept="image/*" class="w-full p-2 border rounded">
+  </div>
+
+  <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+    إرسال الطلب
+  </button>
+</form>
+
+<div id="welcome-message"
+     class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center">
+</div>
+
 </div>
 </body>
 </html>
