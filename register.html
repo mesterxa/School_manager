@@ -3,20 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل أدمن جديد | EduDZ</title>
+<title>تسجيل أدمن جديد</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import {
+  getFirestore, collection, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
   projectId: "schoolmanager-1bab3",
-  storageBucket: "schoolmanager-1bab3.appspot.com",
+  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
   messagingSenderId: "365294333627",
   appId: "1:365294333627:web:b98978770a9e70adc7439e"
 };
@@ -25,112 +28,99 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// بيانات البوت
-const telegramToken = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
-const chatId = "6858411980"; // chat_id الخاص بالمالك
+/* Telegram */
+const BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
+const CHAT_ID = "6858411980";
 
 window.registerAdmin = async () => {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const school = document.getElementById("school").value.trim();
-  const receiptFile = document.getElementById("receipt").files[0];
-  const messageBox = document.getElementById("welcome-message");
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const password = passwordInput.value.trim();
+  const school = schoolInput.value.trim();
+  const receiptFile = receiptInput.files[0];
 
-  if (!name || !email || !phone || !school || !receiptFile) {
-    alert("⚠️ الرجاء ملء جميع الحقول وإرفاق صورة الوصل");
+  if (!name || !email || !phone || !password || !school || !receiptFile) {
+    alert("⚠️ يرجى ملء جميع الحقول");
     return;
   }
 
   try {
     // 1️⃣ رفع صورة الوصل
-    const storageRef = ref(storage, `admin_receipts/${Date.now()}_${receiptFile.name}`);
-    await uploadBytes(storageRef, receiptFile);
-    const receiptURL = await getDownloadURL(storageRef);
+    const receiptRef = ref(
+      storage,
+      `admin_receipts/${Date.now()}_${receiptFile.name}`
+    );
+    await uploadBytes(receiptRef, receiptFile);
+    const receiptUrl = await getDownloadURL(receiptRef);
 
-    // 2️⃣ حفظ البيانات في Firestore
+    // 2️⃣ حفظ الطلب
     await addDoc(collection(db, "admin_requests"), {
       name,
       email,
       phone,
+      password,       // ← كلمة المرور كما هي
       schoolName: school,
-      receiptURL,
+      receiptPhotoUrl: receiptUrl,
       approved: false,
-      createdAt: new Date()
+      createdAt: serverTimestamp()
     });
 
-    // 3️⃣ إرسال إشعار للبوت
-    const textMessage = `
-طلب أدمن جديد!
-الاسم: ${name}
-البريد: ${email}
-الهاتف: ${phone}
-المدرسة: ${school}
-[رابط الوصل](${receiptURL})
-    `;
-    await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+    // 3️⃣ إرسال الوصل للتيليغرام (قبل القبول)
+    const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+
+    await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: chatId,
-        text: textMessage,
-        parse_mode: "Markdown"
+        chat_id: CHAT_ID,
+        photo: receiptUrl,
+        caption:
+`📥 طلب أدمن جديد
+
+👤 الاسم: ${name}
+🏫 المدرسة: ${school}
+📧 البريد: ${email}
+📞 الهاتف: ${phone}
+
+⏳ بانتظار المراجعة`
       })
     });
 
-    // رسالة للمستخدم
-    messageBox.innerHTML = `
-      ✅ تم استلام طلبك لإدارة <strong>${school}</strong>.<br>
-      يرجى الانتظار، سيتم مراجعة طلبك من طرف المالك قريبًا.
-    `;
-    messageBox.classList.remove("hidden");
+    form.classList.add("hidden");
+    message.classList.remove("hidden");
 
-    document.getElementById("admin-form").reset();
-
-  } catch (error) {
-    console.error(error);
-    alert("❌ حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى");
+  } catch (err) {
+    console.error(err);
+    alert("❌ حدث خطأ أثناء التسجيل");
   }
-}
+};
 </script>
 </head>
 
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
 
 <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
+  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">
+    تسجيل أدمن مدرسة
+  </h1>
 
-  <form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();">
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">الاسم الكامل</label>
-      <input type="text" id="name" class="w-full p-2 border rounded" placeholder="أدخل الاسم">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">البريد الإلكتروني</label>
-      <input type="email" id="email" class="w-full p-2 border rounded" placeholder="أدخل البريد">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">رقم الهاتف</label>
-      <input type="tel" id="phone" class="w-full p-2 border rounded" placeholder="05xxxxxxxx">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">اسم المدرسة</label>
-      <input type="text" id="school" class="w-full p-2 border rounded" placeholder="مثال: مدرسة النور">
-    </div>
-
-    <div class="mb-4">
-      <label class="block mb-2 font-bold">صورة وصل الدفع (CCP)</label>
-      <input type="file" id="receipt" accept="image/*" class="w-full p-2 border rounded">
-    </div>
-
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">تسجيل</button>
+  <form id="form" onsubmit="event.preventDefault(); registerAdmin();" class="space-y-4">
+    <input id="nameInput" placeholder="الاسم الكامل" class="w-full p-2 border rounded">
+    <input id="emailInput" type="email" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded">
+    <input id="phoneInput" placeholder="رقم الهاتف" class="w-full p-2 border rounded">
+    <input id="passwordInput" type="password" placeholder="كلمة المرور" class="w-full p-2 border rounded">
+    <input id="schoolInput" placeholder="اسم المدرسة" class="w-full p-2 border rounded">
+    <input id="receiptInput" type="file" accept="image/*" class="w-full p-2 border rounded">
+    <button class="w-full bg-blue-600 text-white py-2 rounded">
+      إرسال الطلب
+    </button>
   </form>
 
-  <div id="welcome-message" class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center"></div>
+  <div id="message" class="hidden mt-6 text-center bg-green-100 p-4 rounded">
+    ✅ تم إرسال طلبك بنجاح  
+    <br>⏳ يرجى الانتظار حتى تتم المراجعة (أقل من ساعة)
+  </div>
 </div>
 
 </body>
