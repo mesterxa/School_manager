@@ -11,7 +11,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// Firebase
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
@@ -24,11 +24,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Telegram
+// ===== Telegram Config =====
 const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
 const TELEGRAM_CHAT_ID = "6858411980";
 
-// تسجيل الأدمن
+// ===== تسجيل الأدمن =====
 window.registerAdmin = async () => {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -49,21 +49,21 @@ window.registerAdmin = async () => {
     await uploadBytes(storageRef, photo);
     const photoUrl = await getDownloadURL(storageRef);
 
-    // إضافة الطلب إلى Firestore مع الحقول الصحيحة
+    // إضافة الطلب إلى Firestore
     await addDoc(collection(db, "admin_requests"), {
       name,
-      "e-mail": email,         // البريد كما هو
+      "e-mail": email,
       phone,
       password,
       schoolName: school,
-      paymentPhotoUrl: photoUrl, // الاسم الصحيح للحقل
+      paymentPhotoUrl: photoUrl,
       approved: false,
       createdAt: serverTimestamp()
     });
 
     // إرسال البيانات مع الصورة للبوت على Telegram
     const telegramMessage = `
-طلب أدمن جديد:
+📢 طلب أدمن جديد:
 الاسم: ${name}
 البريد: ${email}
 الهاتف: ${phone}
