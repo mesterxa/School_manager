@@ -1,128 +1,152 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Owner Panel | School Manager</title>
+  <meta charset="UTF-8">
+  <title>Owner Panel | School Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-body { font-family: 'Inter', sans-serif; }
-</style>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, collection, getDocs, 
+      doc, updateDoc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 🔐 UID الخاص بالمالك (Owner)
+    const OWNER_UID = "LnaJEMsXFJPiEDprpMS2CWgj0h92";
+
+    // حماية الصفحة: لا يسمح إلا للمالك بالدخول
+    onAuthStateChanged(auth, (user) => {
+      if (!user || user.uid !== OWNER_UID) {
+        alert("🚫 غير مصرح لك بالدخول");
+        window.location.href = "/admin/login.html";
+      }
+    });
+
+    // تحميل الأدمنات
+    async function loadAdmins() {
+      const tbody = document.getElementById("adminsTable");
+      tbody.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "admins"));
+
+      querySnapshot.forEach((docSnap) => {
+        const admin = docSnap.data();
+        const id = docSnap.id;
+
+        const row = document.createElement("tr");
+        row.className = "border-b";
+
+        row.innerHTML = `
+          <td class="p-3">${admin.name}</td>
+          <td class="p-3">${admin.email}</td>
+          <td class="p-3">${admin.phone}</td>
+          <td class="p-3">
+            <span class="px-3 py-1 rounded-full text-sm ${
+              admin.status === "approved"
+                ? "bg-green-100 text-green-700"
+                : admin.status === "rejected"
+                ? "bg-red-100 text-red-700"
+                : "bg-yellow-100 text-yellow-700"
+            }">
+              ${admin.status}
+            </span>
+          </td>
+          <td class="p-3 flex gap-2">
+            <button onclick="approveAdmin('${id}')" class="bg-green-600 text-white px-3 py-1 rounded">
+              قبول
+            </button>
+            <button onclick="rejectAdmin('${id}')" class="bg-red-600 text-white px-3 py-1 rounded">
+              رفض
+            </button>
+            <button onclick="deleteAdmin('${id}')" class="bg-gray-600 text-white px-3 py-1 rounded">
+              حذف
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // قبول الأدمن
+    window.approveAdmin = async (id) => {
+      await updateDoc(doc(db, "admins", id), {
+        status: "approved"
+      });
+      alert("✅ تم قبول الأدمن");
+      loadAdmins();
+    };
+
+    // رفض الأدمن
+    window.rejectAdmin = async (id) => {
+      await updateDoc(doc(db, "admins", id), {
+        status: "rejected"
+      });
+      alert("❌ تم رفض الأدمن");
+      loadAdmins();
+    };
+
+    // حذف الأدمن نهائيًا
+    window.deleteAdmin = async (id) => {
+      if (!confirm("هل أنت متأكد من الحذف النهائي؟")) return;
+      await deleteDoc(doc(db, "admins", id));
+      alert("🗑️ تم الحذف");
+      loadAdmins();
+    };
+
+    // تحميل الأدمنات عند فتح الصفحة
+    window.onload = loadAdmins;
+
+  </script>
 </head>
 
-<body class="bg-gray-100 text-gray-800 min-h-screen">
+<body class="bg-gray-100 min-h-screen p-8">
 
-<header class="bg-black text-white py-4 px-6">
-  <h1 class="text-xl font-black">👑 Owner Control Panel</h1>
-  <p class="text-sm text-gray-300">طلبات الأدمن + CCP</p>
-</header>
+  <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">
+    لوحة تحكم المالك (Owner)
+  </h1>
 
-<main class="max-w-6xl mx-auto p-6">
+  <div class="bg-white rounded-2xl shadow overflow-x-auto">
+    <table class="w-full text-sm text-right">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-3">الاسم</th>
+          <th class="p-3">البريد الإلكتروني</th>
+          <th class="p-3">الهاتف</th>
+          <th class="p-3">الحالة</th>
+          <th class="p-3">التحكم</th>
+        </tr>
+      </thead>
+      <tbody id="adminsTable"></tbody>
+    </table>
+  </div>
 
-<section class="bg-white rounded-2xl shadow p-6">
-<h2 class="text-xl font-bold mb-6">طلبات الأدمن المعلقة</h2>
-
-<table class="w-full text-sm">
-<thead>
-<tr class="text-gray-500">
-  <th>الاسم</th>
-  <th>الإيميل</th>
-  <th>إثبات الدفع</th>
-  <th>الإجراء</th>
-</tr>
-</thead>
-<tbody id="adminsTable"></tbody>
-</table>
-
-</section>
-
-</main>
-
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  doc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-  authDomain: "schoolmanager-1bab3.firebaseapp.com",
-  projectId: "schoolmanager-1bab3",
-  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-  messagingSenderId: "365294333627",
-  appId: "1:365294333627:web:b98978770a9e70adc7439e"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/*
-⚠️ حماية الصفحة:
-ضع UID حسابك أنت هنا (Owner)
-*/
-const OWNER_UID = "PUT_YOUR_OWNER_UID_HERE";
-
-onAuthStateChanged(auth, user => {
-  if (!user || user.uid !== OWNER_UID) {
-    alert("🚫 غير مصرح لك");
-    location.href = "/";
-  }
-});
-
-const adminsTable = document.getElementById("adminsTable");
-
-onSnapshot(collection(db, "admins"), snap => {
-  adminsTable.innerHTML = "";
-  snap.forEach(docSnap => {
-    const a = docSnap.data();
-    if (a.status === "pending") {
-      adminsTable.innerHTML += `
-      <tr>
-        <td>${a.name}</td>
-        <td>${a.email}</td>
-        <td>
-          <a href="${a.paymentImage || '#'}" target="_blank"
-             class="text-blue-600 underline">
-             عرض الصورة
-          </a>
-        </td>
-        <td class="flex gap-2">
-          <button onclick="approve('${docSnap.id}')"
-            class="bg-green-600 text-white px-3 py-1 rounded">
-            قبول
-          </button>
-          <button onclick="reject('${docSnap.id}')"
-            class="bg-red-600 text-white px-3 py-1 rounded">
-            رفض
-          </button>
-        </td>
-      </tr>`;
-    }
-  });
-});
-
-window.approve = async id => {
-  await updateDoc(doc(db,"admins",id), { status:"active" });
-  alert("✅ تم التفعيل");
-};
-
-window.reject = async id => {
-  if(confirm("حذف الأدمن نهائيًا؟")){
-    await deleteDoc(doc(db,"admins",id));
-  }
-};
-</script>
+  <!-- زر فتح بوت Telegram -->
+  <div class="mt-8 text-center">
+    <a href="https://t.me/msayment_bot" target="_blank"
+      class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700">
+      فتح بوت Telegram (وصولات CCP)
+    </a>
+  </div>
 
 </body>
 </html>
