@@ -11,8 +11,69 @@
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-  <!-- AOS -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, user => {
+      if(user) currentUser = user;
+      loadPosts();
+    });
+
+    async function loadPosts(){
+      const postsContainer = document.getElementById("posts-container");
+      postsContainer.innerHTML = "جارٍ تحميل المنشورات...";
+      
+      const postsRef = collection(db, "posts");
+      const q = query(postsRef, orderBy("createdAt","desc"));
+      const snapshot = await getDocs(q);
+
+      postsContainer.innerHTML = "";
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+
+        // تحقق من الوصول: العامة أو الخاصة
+        const canView = data.isPublic || (currentUser && data.allowedUIDs?.includes(currentUser.uid));
+        if(!canView) return;
+
+        const postEl = document.createElement("div");
+        postEl.className = "bg-white p-6 rounded-2xl shadow mb-6 hover:shadow-xl transition";
+
+        postEl.innerHTML = `
+          <h4 class="text-xl font-bold mb-1">${data.title}</h4>
+          <p class="text-gray-600 mb-2"><strong>المعلم:</strong> ${data.teacherName} | <strong>المدرسة:</strong> ${data.schoolName}</p>
+          <p class="text-gray-800 mb-2"><strong>المادة:</strong> ${data.subject} | <strong>المستوى:</strong> ${data.level}</p>
+          <p class="text-gray-700 mb-2">${data.content || ""}</p>
+          ${data.attachments ? data.attachments.map(url => `<img src="${url}" class="w-full rounded-xl mb-2"/>`).join("") : ""}
+          <p class="text-gray-400 text-sm">تاريخ النشر: ${data.createdAt?.toDate().toLocaleString() || ""}</p>
+        `;
+
+        postsContainer.appendChild(postEl);
+      });
+
+      if(postsContainer.innerHTML === ""){
+        postsContainer.innerHTML = "<p class='text-gray-500 text-center'>لا توجد منشورات متاحة حالياً.</p>";
+      }
+    }
+  </script>
 
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -28,6 +89,7 @@
 
     <nav class="hidden md:flex gap-6 font-semibold items-center">
       <a href="#courses" class="hover:text-blue-600">الدروس</a>
+      <a href="#posts" class="hover:text-blue-600">المنشورات</a>
       <a href="#how" class="hover:text-blue-600">كيف تعمل</a>
       <a href="ccp.html" class="hover:text-blue-600">الدفع</a>
       <a href="login.html" class="hover:text-blue-600">تسجيل الدخول</a>
@@ -41,7 +103,7 @@
 
 <!-- ================= HERO ================= -->
 <section class="h-screen flex items-center justify-center text-center px-6 bg-gradient-to-br from-blue-50 to-white">
-  <div data-aos="fade-up">
+  <div>
     <h2 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
       تعلم من بيتك <br>
       <span class="text-blue-600">بأساتذة جزائريين</span>
@@ -70,60 +132,29 @@
   <h3 class="text-3xl font-bold text-center mb-12">المواد المتوفرة</h3>
 
   <div class="grid md:grid-cols-3 gap-8">
-    <!-- المواد الشائعة في الجزائر -->
-    <div data-aos="zoom-in" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">📘 الرياضيات</h4>
-      <p class="text-gray-600 mb-4">دروس مباشرة + تسجيلات + تمارين</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
+    <script>
+      const subjects = [
+        "رياضيات","عربية","فرنسية","تاريخ وجغرافيا","علوم","فيزياء","كيمياء","تكنولوجيا",
+        "لغة إنجليزية","فلسفة","تربية إسلامية","تربية مدنية","تربية بدنية","اقتصاد"
+      ];
+      subjects.forEach(subject => {
+        document.write(`
+          <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+            <h4 class="text-xl font-bold mb-2">📘 ${subject}</h4>
+            <p class="text-gray-600 mb-4">دروس مباشرة + تسجيلات + تمارين</p>
+            <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
+          </div>
+        `);
+      });
+    </script>
+  </div>
+</section>
 
-    <div data-aos="zoom-in" data-aos-delay="100" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">📗 اللغة العربية</h4>
-      <p class="text-gray-600 mb-4">قواعد – نصوص – تعبير</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="200" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">🌍 تاريخ وجغرافيا</h4>
-      <p class="text-gray-600 mb-4">تبسيط + مراجعات</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="300" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">📙 الفرنسية</h4>
-      <p class="text-gray-600 mb-4">قواعد – نصوص – تعبير</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="400" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">🧪 العلوم الفيزيائية و الكيمياء</h4>
-      <p class="text-gray-600 mb-4">تجارب + مراجعات</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="500" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">🔬 العلوم الطبيعية</h4>
-      <p class="text-gray-600 mb-4">دروس – مراجعات</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="600" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">💻 الإعلام الآلي</h4>
-      <p class="text-gray-600 mb-4">برمجة + مشاريع</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="700" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">🌱 التربية العلمية</h4>
-      <p class="text-gray-600 mb-4">تجارب عملية + أنشطة</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
-
-    <div data-aos="zoom-in" data-aos-delay="800" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-      <h4 class="text-xl font-bold mb-2">📝 التربية الإسلامية</h4>
-      <p class="text-gray-600 mb-4">قرآن – حديث – فقه</p>
-      <a href="course.html" class="text-blue-600 font-semibold">عرض التفاصيل →</a>
-    </div>
+<!-- ================= POSTS ================= -->
+<section id="posts" class="py-20 max-w-7xl mx-auto px-6">
+  <h3 class="text-3xl font-bold text-center mb-12">المنشورات</h3>
+  <div id="posts-container" class="grid md:grid-cols-2 gap-6">
+    <!-- المنشورات يتم تحميلها هنا ديناميكياً -->
   </div>
 </section>
 
@@ -133,9 +164,9 @@
     <h3 class="text-3xl font-bold mb-12">كيف تشترك؟</h3>
 
     <div class="grid md:grid-cols-3 gap-8 text-xl">
-      <div data-aos="fade-up">📝<p class="font-semibold mt-2">تسجل في الموقع</p></div>
-      <div data-aos="fade-up" data-aos-delay="150">💳<p class="font-semibold mt-2">تحويل بريدي / BaridiMob</p></div>
-      <div data-aos="fade-up" data-aos-delay="300">✅<p class="font-semibold mt-2">تفعيل الحساب</p></div>
+      <div>📝<p class="font-semibold mt-2">تسجل في الموقع</p></div>
+      <div>💳<p class="font-semibold mt-2">تحويل بريدي / BaridiMob</p></div>
+      <div>✅<p class="font-semibold mt-2">تفعيل الحساب</p></div>
     </div>
   </div>
 </section>
@@ -145,11 +176,6 @@
   © 2025 EduDZ – منصة تعليمية جزائرية  
   <p class="mt-2 text-gray-400">ابدأ اليوم، واصنع مستقبلك بنفسك</p>
 </footer>
-
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-  AOS.init({ duration: 800, once: true });
-</script>
 
 </body>
 </html>
