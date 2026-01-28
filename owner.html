@@ -3,122 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة المالك</title>
+<title>لوحة تحكم المالك</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  doc
+  getFirestore, collection, getDocs, doc, addDoc, deleteDoc, updateDoc, serverTimestamp, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-window.addEventListener("DOMContentLoaded", async () => {
+// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+  authDomain: "schoolmanager-1bab3.firebaseapp.com",
+  projectId: "schoolmanager-1bab3",
+  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  messagingSenderId: "365294333627",
+  appId: "1:365294333627:web:b98978770a9e70adc7439e"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  /* ========= Firebase ========= */
-  const firebaseConfig = {
-    apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-    authDomain: "schoolmanager-1bab3.firebaseapp.com",
-    projectId: "schoolmanager-1bab3",
-    storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-    messagingSenderId: "365294333627",
-    appId: "1:365294333627:web:b98978770a9e70adc7439e"
-  };
+// Telegram
+const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
+const TELEGRAM_CHAT_ID = "6858411980";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+// عناصر الجدول
+const requestsTable = document.getElementById("requestsTable");
+const adminsTable = document.getElementById("adminsTable");
 
-  /* ========= Telegram ========= */
-  const BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
-  const CHAT_ID = "6858411980";
+// ===== تحميل الأدمنز =====
+async function loadAdmins() {
+  adminsTable.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "admins"));
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.classList.add("border-b");
+    tr.innerHTML = `
+      <td class="px-4 py-2">${data.name}</td>
+      <td class="px-4 py-2">${data["e-mail"]}</td>
+      <td class="px-4 py-2">${data.phone}</td>
+      <td class="px-4 py-2">${data.schoolName}</td>
+      <td class="px-4 py-2"><button data-id="${docSnap.id}" class="deleteBtn bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">حذف</button></td>
+    `;
+    adminsTable.appendChild(tr);
+  });
 
-  async function sendTelegram(text) {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: CHAT_ID, text })
+  document.querySelectorAll(".deleteBtn").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      const id = e.target.dataset.id;
+      if (confirm("هل أنت متأكد من حذف هذا الأدمن؟")) {
+        await deleteDoc(doc(db, "admins", id));
+        loadAdmins();
+      }
     });
-  }
+  });
+}
 
-  const list = document.getElementById("requests");
+// ===== تحميل طلبات التسجيل =====
+async function loadRequests() {
+  requestsTable.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "admin_requests"));
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.classList.add("border-b");
+    tr.innerHTML = `
+      <td class="px-4 py-2">${data.name}</td>
+      <td class="px-4 py-2">${data["e-mail"]}</td>
+      <td class="px-4 py-2">${data.phone}</td>
+      <td class="px-4 py-2">${data.schoolName}</td>
+      <td class="px-4 py-2">
+        <img src="${data.paymentPhotoUrl}" alt="وصل الدفع" class="w-24 h-24 object-cover rounded mb-2">
+        <button data-id="${docSnap.id}" class="approveBtn bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 mb-1">قبول</button>
+        <button data-id="${docSnap.id}" class="rejectBtn bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500">رفض</button>
+      </td>
+    `;
+    requestsTable.appendChild(tr);
+  });
 
-  /* ========= تحميل الطلبات ========= */
-  async function loadRequests() {
-    list.innerHTML = "";
-    const snap = await getDocs(collection(db, "admin_requests"));
+  // قبول الطلب
+  document.querySelectorAll(".approveBtn").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      const id = e.target.dataset.id;
+      const requestRef = doc(db, "admin_requests", id);
+      const requestSnap = await getDoc(requestRef);
+      if (!requestSnap.exists()) { alert("❌ الطلب غير موجود"); return; }
 
-    snap.forEach(d => {
-      const a = d.data();
-      const id = d.id;
-
-      const card = document.createElement("div");
-      card.className = "bg-white p-4 rounded-xl shadow space-y-2";
-
-      card.innerHTML = `
-        <div><b>الاسم:</b> ${a.name}</div>
-        <div><b>الإيميل:</b> ${a.email}</div>
-        <div><b>الهاتف:</b> ${a.phone}</div>
-        <div><b>المدرسة:</b> ${a.schoolName}</div>
-        <div><b>الحالة:</b> ${a.approved ? "✅ مقبول" : "⏳ في الانتظار"}</div>
-
-        <img src="${a.paymentPhotoUrl}" class="w-full rounded mt-2">
-
-        <div class="flex gap-2 mt-3">
-          <button class="approve bg-green-600 text-white px-4 py-1 rounded">قبول</button>
-          <button class="delete bg-red-600 text-white px-4 py-1 rounded">حذف</button>
-        </div>
-      `;
-
-      /* ===== قبول ===== */
-      card.querySelector(".approve").onclick = async () => {
-        await updateDoc(doc(db, "admin_requests", id), {
-          approved: true
+      const data = requestSnap.data();
+      try {
+        await addDoc(collection(db, "admins"), {
+          name: data.name,
+          "e-mail": data["e-mail"],
+          phone: data.phone,
+          password: data.password,
+          schoolName: data.schoolName,
+          paymentPhotoUrl: data.paymentPhotoUrl,
+          createdAt: serverTimestamp()
         });
 
-        await sendTelegram(
-`✅ تم قبول أدمن
-الاسم: ${a.name}
-الإيميل: ${a.email}
-المدرسة: ${a.schoolName}`
-        );
+        await updateDoc(requestRef, { approved: true });
 
+        // إرسال إشعار للمالِك على Telegram
+        const telegramMessage = `
+تم قبول طلب أدمن:
+الاسم: ${data.name}
+البريد: ${data["e-mail"]}
+الهاتف: ${data.phone}
+المدرسة: ${data.schoolName}
+        `;
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage })
+        });
+
+        loadAdmins();
         loadRequests();
-      };
-
-      /* ===== حذف ===== */
-      card.querySelector(".delete").onclick = async () => {
-        if (!confirm("هل أنت متأكد من الحذف؟")) return;
-
-        await deleteDoc(doc(db, "admin_requests", id));
-
-        await sendTelegram(
-`❌ تم حذف طلب أدمن
-الاسم: ${a.name}
-الإيميل: ${a.email}`
-        );
-
-        loadRequests();
-      };
-
-      list.appendChild(card);
+      } catch(err) {
+        console.error(err);
+        alert("❌ حدث خطأ أثناء قبول الأدمن");
+      }
     });
-  }
+  });
 
+  // رفض الطلب
+  document.querySelectorAll(".rejectBtn").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      const id = e.target.dataset.id;
+      if (confirm("هل تريد رفض هذا الطلب؟")) {
+        await deleteDoc(doc(db, "admin_requests", id));
+        loadRequests();
+      }
+    });
+  });
+}
+
+// عند تحميل الصفحة
+window.onload = () => {
+  loadAdmins();
   loadRequests();
-});
+};
 </script>
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6">
-<h1 class="text-2xl font-bold text-center mb-6 text-blue-700">
-لوحة تحكم المالك
-</h1>
+<body class="bg-gray-50 min-h-screen p-6">
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow">
 
-<div id="requests" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+<h1 class="text-2xl font-bold text-center mb-6 text-blue-600">لوحة تحكم المالك</h1>
 
+<!-- جدول الأدمنز -->
+<h2 class="font-bold mb-2">قائمة الأدمنز</h2>
+<table class="w-full border-collapse text-right mb-6">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="px-4 py-2">الاسم</th>
+      <th class="px-4 py-2">البريد الإلكتروني</th>
+      <th class="px-4 py-2">الهاتف</th>
+      <th class="px-4 py-2">المدرسة</th>
+      <th class="px-4 py-2">حذف</th>
+    </tr>
+  </thead>
+  <tbody id="adminsTable"></tbody>
+</table>
+
+<!-- جدول طلبات التسجيل -->
+<h2 class="font-bold mb-2">طلبات تسجيل الأدمن</h2>
+<table class="w-full border-collapse text-right">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="px-4 py-2">الاسم</th>
+      <th class="px-4 py-2">البريد الإلكتروني</th>
+      <th class="px-4 py-2">الهاتف</th>
+      <th class="px-4 py-2">المدرسة</th>
+      <th class="px-4 py-2">صورة الوصل / إجراءات</th>
+    </tr>
+  </thead>
+  <tbody id="requestsTable"></tbody>
+</table>
+
+</div>
 </body>
 </html>
