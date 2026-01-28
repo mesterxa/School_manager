@@ -1,120 +1,134 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل أدمن جديد | EduDZ</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
-  authDomain: "schoolmanager-1bab3.firebaseapp.com",
-  projectId: "schoolmanager-1bab3",
-  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
-  messagingSenderId: "365294333627",
-  appId: "1:365294333627:web:b98978770a9e70adc7439e"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// توكن بوت المالك
-const OWNER_BOT_TOKEN = "8258052427:AAEaIR2c1JCwcJ0POjn8FfyvZ2dqJyhCTIs";
-const OWNER_CHAT_ID = "<PUT_OWNER_CHAT_ID_HERE>"; // ضع هنا chat_id الخاص بك
-
-window.registerAdmin = async () => {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const school = document.getElementById("school").value.trim();
-  const receipt = document.getElementById("receipt").files[0];
-  const messageBox = document.getElementById("welcome-message");
-
-  if(!name || !email || !phone || !school || !receipt){
-    alert("⚠️ الرجاء ملء جميع الحقول وإرفاق صورة الوصل");
-    return;
-  }
-
-  try{
-    // حفظ الطلب في Firestore
-    const docRef = await addDoc(collection(db, "admins_requests"), {
-      name, email, phone, schoolName: school,
-      approved: false,
-      createdAt: new Date()
-    });
-
-    // إرسال صورة الوصل إلى بوت Telegram الخاص بالمالك
-    const formData = new FormData();
-    formData.append("chat_id", OWNER_CHAT_ID);
-    formData.append("photo", receipt);
-    formData.append("caption", `طلب أدمن جديد:\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nالمدرسة: ${school}`);
-    fetch(`https://api.telegram.org/bot${OWNER_BOT_TOKEN}/sendPhoto`, {
-      method: "POST",
-      body: formData
-    });
-
-    messageBox.innerHTML = `
-      مرحبًا <strong>${name}</strong> 👋<br>
-      تم استلام طلبك لإدارة <strong>${school}</strong>.<br>
-      سيتم مراجعته من طرف المالك قريبًا ✅
-    `;
-    messageBox.classList.remove("hidden");
-    document.getElementById("admin-form").reset();
-
-  } catch(err){
-    console.error(err);
-    alert("❌ حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى");
-  }
-}
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل أدمن جديد | EduDZ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
 
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-<div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+  <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
 
-  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">
-    تسجيل أدمن جديد
-  </h1>
+    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
 
-  <form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();" class="space-y-4">
+    <form id="admin-form" class="space-y-4">
 
-    <div>
-      <label class="block mb-1 font-semibold">الاسم الكامل</label>
-      <input type="text" id="name" placeholder="أدخل الاسم" class="w-full px-4 py-2 border rounded">
+      <!-- الاسم الكامل -->
+      <div>
+        <label class="block mb-1 font-semibold">الاسم الكامل</label>
+        <input type="text" id="name" placeholder="مثال: محمد أحمد"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- البريد الإلكتروني -->
+      <div>
+        <label class="block mb-1 font-semibold">البريد الإلكتروني</label>
+        <input type="email" id="email" placeholder="example@mail.com"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- رقم الهاتف -->
+      <div>
+        <label class="block mb-1 font-semibold">رقم الهاتف</label>
+        <input type="tel" id="phone" placeholder="05xxxxxxxx"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- اسم المدرسة -->
+      <div>
+        <label class="block mb-1 font-semibold">اسم المدرسة</label>
+        <input type="text" id="school" placeholder="مثال: مدرسة النور"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- زر إرسال الطلب -->
+      <button type="submit"
+        class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+        إرسال الطلب
+      </button>
+
+    </form>
+
+    <!-- رسالة ترحيب -->
+    <div id="welcome-message"
+      class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center">
     </div>
 
-    <div>
-      <label class="block mb-1 font-semibold">البريد الإلكتروني</label>
-      <input type="email" id="email" placeholder="أدخل البريد" class="w-full px-4 py-2 border rounded">
-    </div>
+  </div>
 
-    <div>
-      <label class="block mb-1 font-semibold">رقم الهاتف</label>
-      <input type="tel" id="phone" placeholder="05xxxxxxxx" class="w-full px-4 py-2 border rounded">
-    </div>
+  <!-- Firebase + JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    <div>
-      <label class="block mb-1 font-semibold">اسم المدرسة</label>
-      <input type="text" id="school" placeholder="مثال: مدرسة النور" class="w-full px-4 py-2 border rounded">
-    </div>
+    // إعدادات Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
 
-    <div>
-      <label class="block mb-1 font-semibold">صورة الوصل</label>
-      <input type="file" id="receipt" accept="image/*" class="w-full">
-    </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-semibold">
-      إرسال الطلب
-    </button>
-  </form>
+    const OWNER_BOT_TOKEN = "8258052427:AAEaIR2c1JCwcJ0POjn8FfyvZ2dqJyhCTIs"; // بوت المالك
+    const OWNER_CHAT_ID = "YOUR_OWNER_CHAT_ID"; // ضع هنا chat_id الخاص بالمالك
 
-  <div id="welcome-message" class="hidden mt-4 p-4 bg-green-100 text-green-800 rounded text-center"></div>
+    const form = document.getElementById("admin-form");
+    const messageBox = document.getElementById("welcome-message");
 
-</div>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const school = document.getElementById("school").value.trim();
+
+      if (!name || !email || !phone || !school) {
+        alert("⚠️ الرجاء إدخال جميع الحقول");
+        return;
+      }
+
+      try {
+        // حفظ الطلب في Firestore
+        await addDoc(collection(db, "admins_requests"), {
+          name,
+          email,
+          phone,
+          schoolName: school,
+          createdAt: new Date()
+        });
+
+        // رسالة ترحيب للأدمن
+        messageBox.innerHTML = `
+          مرحبًا <strong>${name}</strong> 👋<br>
+          تم استلام طلبك لإدارة <strong>${school}</strong>.<br>
+          سيتم مراجعته من طرف المالك قريبًا ✅
+        `;
+        messageBox.classList.remove("hidden");
+        form.reset();
+
+        // إرسال إشعار للمالك عبر Telegram bot
+        fetch(`https://api.telegram.org/bot${OWNER_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: OWNER_CHAT_ID,
+            text: `📢 طلب أدمن جديد:\n\nالاسم: ${name}\nالبريد: ${email}\nالهاتف: ${phone}\nالمدرسة: ${school}`
+          })
+        });
+
+      } catch (err) {
+        console.error("خطأ في إرسال الطلب:", err);
+        alert("❌ حدث خطأ، حاول مرة أخرى");
+      }
+    });
+  </script>
+
 </body>
 </html>
