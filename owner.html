@@ -3,15 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Owner Dashboard | EduDZ</title>
+<title>لوحة المالك | School Manager</title>
 <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
 
-<!-- Firebase -->
+<div class="max-w-6xl mx-auto p-6">
+
+  <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">طلبات الأدمن الجديدة</h1>
+
+  <div id="requestsContainer" class="space-y-4">
+    <!-- هنا ستظهر الطلبات -->
+  </div>
+
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
@@ -23,216 +34,85 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
-const OWNER_UID = "<PUT_OWNER_UID_HERE>"; // ضع UID الخاص بك هنا
+const requestsContainer = document.getElementById("requestsContainer");
 
-// التحقق من تسجيل الدخول
-onAuthStateChanged(auth, user => {
-  if(!user || user.uid !== OWNER_UID){
-    alert("🚫 فقط المالك يمكنه الدخول");
-    window.location.href = "../loginowner.html";
-  } else {
-    loadAdminRequests();
-    loadAdminsTable();
-  }
-});
+// تحميل الطلبات
+async function loadRequests() {
+  requestsContainer.innerHTML = "جاري تحميل الطلبات...";
+  const snapshot = await getDocs(collection(db, "admins_requests"));
+  requestsContainer.innerHTML = "";
 
-// تسجيل الخروج
-window.logoutOwner = async () => {
-  await signOut(auth);
-  window.location.href = "../loginowner.html";
-}
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const docId = docSnap.id;
 
-// ===== 1. طلبات الأدمن الجديدة =====
-const requestsTable = document.getElementById("requests-table");
+    const card = document.createElement("div");
+    card.className = "bg-white p-4 rounded-2xl shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
 
-async function loadAdminRequests(){
-  const requestsRef = collection(db, "admins_requests");
-  onSnapshot(requestsRef, snapshot => {
-    requestsTable.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const tr = document.createElement("tr");
-      tr.className = "border-b hover:bg-gray-100";
-      tr.innerHTML = `
-        <td class="px-4 py-2">${docSnap.id}</td>
-        <td class="px-4 py-2">${data.name}</td>
-        <td class="px-4 py-2">${data.email}</td>
-        <td class="px-4 py-2">${data.phone || "-"}</td>
-        <td class="px-4 py-2">${data.schoolName}</td>
-        <td class="px-4 py-2">
-          <button class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700" onclick='approveAdmin("${docSnap.id}", "${data.name}", "${data.email}", "${data.schoolName}")'>قبول</button>
-          <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700" onclick='rejectAdmin("${docSnap.id}")'>رفض</button>
-        </td>
-      `;
-      requestsTable.appendChild(tr);
-    });
+    const info = document.createElement("div");
+    info.innerHTML = `
+      <p><strong>الاسم:</strong> ${data.fullName}</p>
+      <p><strong>البريد:</strong> ${data.email}</p>
+      <p><strong>الهاتف:</strong> ${data.phone}</p>
+      <p><strong>تاريخ الطلب:</strong> ${data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : ''}</p>
+      ${data.paymentPhotoUrl ? `<img src="${data.paymentPhotoUrl}" class="mt-2 w-40 rounded shadow" />` : ''}
+    `;
+
+    const actions = document.createElement("div");
+    actions.className = "flex gap-2";
+
+    // زر قبول
+    const acceptBtn = document.createElement("button");
+    acceptBtn.className = "bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700";
+    acceptBtn.textContent = "قبول";
+    acceptBtn.onclick = async () => {
+      try {
+        await addDoc(collection(db, "admins"), {
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          createdAt: serverTimestamp(),
+          approvedByOwner: true
+        });
+        await deleteDoc(doc(db, "admins_requests", docId));
+        alert(`✅ تم قبول ${data.fullName}`);
+        loadRequests();
+      } catch (err) {
+        console.error(err);
+        alert("❌ حدث خطأ أثناء قبول الطلب");
+      }
+    };
+
+    // زر رفض
+    const rejectBtn = document.createElement("button");
+    rejectBtn.className = "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700";
+    rejectBtn.textContent = "رفض";
+    rejectBtn.onclick = async () => {
+      try {
+        await deleteDoc(doc(db, "admins_requests", docId));
+        alert(`❌ تم رفض ${data.fullName}`);
+        loadRequests();
+      } catch (err) {
+        console.error(err);
+        alert("❌ حدث خطأ أثناء رفض الطلب");
+      }
+    };
+
+    actions.appendChild(acceptBtn);
+    actions.appendChild(rejectBtn);
+
+    card.appendChild(info);
+    card.appendChild(actions);
+
+    requestsContainer.appendChild(card);
   });
+
+  if (snapshot.empty) requestsContainer.innerHTML = "<p class='text-gray-500 text-center'>لا توجد طلبات جديدة</p>";
 }
 
-async function approveAdmin(docId, name, email, schoolName){
-  try{
-    await addDoc(collection(db, "admins"), {
-      name, email, schoolName, telegramBotToken: "", uid: ""
-    });
-    await deleteDoc(doc(db, "admins_requests", docId));
-    alert("تم قبول الأدمن ✅");
-    loadAdminsTable();
-  } catch(err){
-    console.error(err);
-    alert("حدث خطأ أثناء القبول");
-  }
-}
-
-async function rejectAdmin(docId){
-  if(confirm("هل تريد رفض هذا الطلب؟")){
-    await deleteDoc(doc(db, "admins_requests", docId));
-    alert("تم رفض الطلب ✅");
-  }
-}
-
-// ===== 2. الأدمنات الحاليين + إحصائيات الطلاب والأساتذة =====
-const adminsTable = document.getElementById("admins-table");
-
-async function loadAdminsTable(){
-  const adminsRef = collection(db, "admins");
-  onSnapshot(adminsRef, snapshot => {
-    adminsTable.innerHTML = "";
-    snapshot.forEach(async docSnap => {
-      const data = docSnap.data();
-
-      // حساب عدد الطلاب (حضوري وأونلاين)
-      const studentsRef = collection(db, "students");
-      const q1 = query(studentsRef, where("adminId", "==", docSnap.id));
-      const studentsSnapshot = await getDocs(q1);
-      let totalStudents = 0, online = 0, presencial = 0;
-      studentsSnapshot.forEach(snap => {
-        totalStudents++;
-        if(snap.data().studentType === "أونلاين") online++;
-        else presencial++;
-      });
-
-      // حساب عدد الأساتذة
-      const teachersRef = collection(db, "teachers");
-      const q2 = query(teachersRef, where("adminId", "==", docSnap.id));
-      const teachersSnapshot = await getDocs(q2);
-      const totalTeachers = teachersSnapshot.size;
-
-      const tr = document.createElement("tr");
-      tr.className = "border-b hover:bg-gray-100";
-      tr.innerHTML = `
-        <td class="px-4 py-2">${docSnap.id}</td>
-        <td class="px-4 py-2">${data.name}</td>
-        <td class="px-4 py-2">${data.email}</td>
-        <td class="px-4 py-2">${data.schoolName}</td>
-        <td class="px-4 py-2">${totalStudents} (حضوري: ${presencial}, أونلاين: ${online})</td>
-        <td class="px-4 py-2">${totalTeachers}</td>
-        <td class="px-4 py-2">
-          <input type="text" placeholder="Telegram Bot Token" class="border px-2 py-1 rounded w-full mb-1" id="token-${docSnap.id}" value="${data.telegramBotToken || ""}">
-          <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 w-full mb-1" onclick='updateToken("${docSnap.id}")'>حفظ التوكن</button>
-          <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 w-full" onclick='deleteAdmin("${docSnap.id}")'>حذف</button>
-        </td>
-      `;
-      adminsTable.appendChild(tr);
-    });
-  });
-}
-
-// تحديث توكن Telegram
-window.updateToken = async (docId) => {
-  const tokenInput = document.getElementById(`token-${docId}`);
-  const token = tokenInput.value.trim();
-  try{
-    await updateDoc(doc(db, "admins", docId), { telegramBotToken: token });
-    alert("تم تحديث التوكن ✅");
-  } catch(err){
-    console.error(err);
-    alert("حدث خطأ أثناء تحديث التوكن");
-  }
-}
-
-// حذف أدمن
-async function deleteAdmin(docId){
-  if(confirm("هل تريد حذف هذا الأدمن؟")){
-    await deleteDoc(doc(db, "admins", docId));
-    alert("تم حذف الأدمن ✅");
-  }
-}
-
-// ===== 3. إضافة أدمن يدويًا =====
-window.addManualAdmin = async () => {
-  const name = document.getElementById("manual-name").value.trim();
-  const email = document.getElementById("manual-email").value.trim();
-  const schoolName = document.getElementById("manual-school").value.trim();
-
-  if(!name || !email || !schoolName){
-    alert("يرجى ملء جميع الحقول");
-    return;
-  }
-
-  try{
-    await addDoc(collection(db, "admins"), { name, email, schoolName, telegramBotToken: "", uid: "" });
-    alert("تم إضافة الأدمن ✅");
-    document.getElementById("manual-name").value = "";
-    document.getElementById("manual-email").value = "";
-    document.getElementById("manual-school").value = "";
-    loadAdminsTable();
-  } catch(err){
-    console.error(err);
-    alert("حدث خطأ أثناء الإضافة");
-  }
-}
+loadRequests();
 </script>
-</head>
-
-<body class="bg-gray-50 min-h-screen p-6">
-
-<div class="flex justify-between items-center mb-6">
-  <h1 class="text-3xl font-bold text-blue-600">Owner Dashboard</h1>
-  <button onclick="logoutOwner()" class="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700">تسجيل الخروج</button>
-</div>
-
-<!-- ===== طلبات الأدمن الجديدة ===== -->
-<section class="mb-12">
-  <h2 class="text-xl font-bold mb-2">طلبات الأدمن الجديدة</h2>
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white rounded-xl shadow">
-      <thead class="bg-blue-600 text-white">
-        <tr>
-          <th>ID</th><th>الاسم</th><th>البريد</th><th>الهاتف</th><th>المدرسة</th><th>الإجراءات</th>
-        </tr>
-      </thead>
-      <tbody id="requests-table"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- ===== الأدمنات الحاليين ===== -->
-<section class="mb-12">
-  <h2 class="text-xl font-bold mb-2">الأدمنات الحاليين</h2>
-  <div class="overflow-x-auto mb-4">
-    <table class="min-w-full bg-white rounded-xl shadow">
-      <thead class="bg-blue-600 text-white">
-        <tr>
-          <th>ID</th><th>الاسم</th><th>البريد</th><th>المدرسة</th><th>عدد الطلاب</th><th>عدد الأساتذة</th><th>الإجراءات</th>
-        </tr>
-      </thead>
-      <tbody id="admins-table"></tbody>
-    </table>
-  </div>
-
-  <!-- إضافة أدمن يدويًا -->
-  <div class="bg-white rounded-xl shadow p-6">
-    <h3 class="text-lg font-bold mb-2">إضافة أدمن يدويًا</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <input type="text" id="manual-name" placeholder="الاسم" class="border px-3 py-2 rounded w-full">
-      <input type="email" id="manual-email" placeholder="البريد الإلكتروني" class="border px-3 py-2 rounded w-full">
-      <input type="text" id="manual-school" placeholder="اسم المدرسة" class="border px-3 py-2 rounded w-full">
-    </div>
-    <button onclick="addManualAdmin()" class="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">إضافة</button>
-  </div>
-</section>
 
 </body>
 </html>
