@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>تسجيل أدمن | School Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔥 Firebase Config (كما أرسلته)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
+      authDomain: "schoolmanager-1bab3.firebaseapp.com",
+      projectId: "schoolmanager-1bab3",
+      storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+      messagingSenderId: "365294333627",
+      appId: "1:365294333627:web:b98978770a9e70adc7439e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 🔐 Telegram Bot (Owner)
+    const TELEGRAM_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
+    const TELEGRAM_CHAT_ID = "6858411980"; // نفس chat الذي تستعمله
+
+    window.registerAdmin = async function () {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const phone = document.getElementById("phone").value;
+      const image = document.getElementById("ccp").files[0];
+
+      if (!image) {
+        alert("❌ يرجى رفع صورة وصل CCP");
+        return;
+      }
+
+      try {
+        // 1️⃣ إنشاء حساب Firebase Auth
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        // 2️⃣ حفظ الأدمن في Firestore (pending)
+        await setDoc(doc(db, "admins", uid), {
+          name,
+          email,
+          phone,
+          role: "admin",
+          status: "pending", // ⛔ في انتظار الموافقة
+          createdAt: serverTimestamp()
+        });
+
+        // 3️⃣ إرسال صورة CCP إلى Telegram
+        const formData = new FormData();
+        formData.append("chat_id", TELEGRAM_CHAT_ID);
+        formData.append("photo", image);
+        formData.append(
+          "caption",
+          `🛑 طلب تسجيل أدمن جديد\n\n👤 الاسم: ${name}\n📧 البريد: ${email}\n📞 الهاتف: ${phone}\n🆔 UID: ${uid}\n\n⚠️ الحالة: في انتظار الموافقة`
+        );
+
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
+          method: "POST",
+          body: formData
+        });
+
+        alert("✅ تم إرسال طلبك بنجاح\nسيتم مراجعته من طرف الإدارة");
+        window.location.href = "login.html";
+
+      } catch (error) {
+        alert("❌ خطأ: " + error.message);
+      }
+    };
+  </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">
+      تسجيل أدمن جديد
+    </h1>
+
+    <div class="space-y-4">
+      <input id="name" type="text" placeholder="الاسم الكامل"
+        class="w-full border p-3 rounded-lg"/>
+
+      <input id="email" type="email" placeholder="البريد الإلكتروني"
+        class="w-full border p-3 rounded-lg"/>
+
+      <input id="password" type="password" placeholder="كلمة المرور"
+        class="w-full border p-3 rounded-lg"/>
+
+      <input id="phone" type="tel" placeholder="رقم الهاتف"
+        class="w-full border p-3 rounded-lg"/>
+
+      <div>
+        <label class="block mb-1 text-sm font-semibold">
+          رفع وصل الدفع CCP
+        </label>
+        <input id="ccp" type="file" accept="image/*"
+          class="w-full border p-2 rounded-lg"/>
+      </div>
+
+      <button onclick="registerAdmin()"
+        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+        إرسال الطلب
+      </button>
+
+      <p class="text-sm text-center text-gray-500">
+        سيتم تفعيل الحساب بعد مراجعة الإدارة
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>
