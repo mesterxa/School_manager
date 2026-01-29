@@ -2,8 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل أدمن جديد</title>
+<title>تسجيل أدمن</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script type="module">
@@ -11,97 +10,68 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCODe3VO-CPq-029218YsgaUQ9MKp90E3k",
   authDomain: "schoolmanager-1bab3.firebaseapp.com",
   projectId: "schoolmanager-1bab3",
-  storageBucket: "schoolmanager-1bab3.firebasestorage.app",
+  storageBucket: "schoolmanager-1bab3.appspot.com",
   messagingSenderId: "365294333627",
   appId: "1:365294333627:web:b98978770a9e70adc7439e"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Telegram
-const TELEGRAM_BOT_TOKEN = "8205787836:AAEgJSmusQzLonnQ7WeeR01RZ04YFhpxzA8";
-const TELEGRAM_CHAT_ID = "6858411980";
+window.submitForm = async () => {
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const password = passwordInput.value.trim();
+  const school = schoolInput.value.trim();
+  const file = receiptInput.files[0];
 
-window.registerAdmin = async () => {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const school = document.getElementById("school").value.trim();
-  const photo = document.getElementById("photo").files[0];
-  const messageBox = document.getElementById("welcome-message");
-
-  if (!name || !email || !phone || !password || !school || !photo) {
-    alert("⚠️ الرجاء ملء جميع الحقول وإرفاق صورة الوصل");
+  if (!name || !email || !phone || !password || !school || !file) {
+    alert("املأ كل الحقول");
     return;
   }
 
   try {
-    // رفع صورة الدفع
-    const storageRef = ref(storage, `payment_photos/${Date.now()}_${photo.name}`);
-    await uploadBytes(storageRef, photo);
-    const photoUrl = await getDownloadURL(storageRef);
+    const receiptRef = ref(storage, `payment_receipts/${Date.now()}_${file.name}`);
+    await uploadBytes(receiptRef, file);
+    const url = await getDownloadURL(receiptRef);
 
-    // إضافة الطلب إلى Firestore
     await addDoc(collection(db, "admin_requests"), {
-      name, email, phone, password, schoolName: school,
-      paymentPhotoUrl: photoUrl,
+      name,
+      email,
+      phone,
+      password,
+      schoolName: school,
+      paymentPhotoUrl: url,
       approved: false,
       createdAt: serverTimestamp()
     });
 
-    // إرسال البيانات للبوت
-    const telegramMessage = `
-طلب أدمن جديد:
-الاسم: ${name}
-البريد: ${email}
-الهاتف: ${phone}
-المدرسة: ${school}
-صورة الوصل: ${photoUrl}
-    `;
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage })
-    });
-
-    messageBox.innerHTML = `
-      مرحبًا <strong>${name}</strong> 👋<br>
-      تم إرسال طلبك لإدارة <strong>${school}</strong>.<br>
-      سيتم مراجعته من طرف المالك قريبًا ✅
-    `;
-    messageBox.classList.remove("hidden");
-    document.getElementById("admin-form").reset();
-
-  } catch (err) {
-    console.error(err);
-    alert("❌ حدث خطأ أثناء إرسال الطلب");
+    alert("تم إرسال الطلب بنجاح");
+    form.reset();
+  } catch (e) {
+    console.error(e);
+    alert("فشل الإرسال");
   }
 };
 </script>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-<div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">تسجيل أدمن جديد</h1>
-
-  <form id="admin-form" onsubmit="event.preventDefault(); registerAdmin();">
-    <div class="mb-4"><label>الاسم الكامل</label><input type="text" id="name" class="w-full p-2 border rounded"></div>
-    <div class="mb-4"><label>البريد الإلكتروني</label><input type="email" id="email" class="w-full p-2 border rounded"></div>
-    <div class="mb-4"><label>رقم الهاتف</label><input type="tel" id="phone" class="w-full p-2 border rounded"></div>
-    <div class="mb-4"><label>كلمة المرور</label><input type="password" id="password" class="w-full p-2 border rounded"></div>
-    <div class="mb-4"><label>اسم المدرسة</label><input type="text" id="school" class="w-full p-2 border rounded"></div>
-    <div class="mb-4"><label>صورة وصل الدفع</label><input type="file" id="photo" accept="image/*" class="w-full p-2 border rounded"></div>
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">إرسال الطلب</button>
-  </form>
-
-  <div id="welcome-message" class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded text-center"></div>
-</div>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+<form id="form" onsubmit="event.preventDefault(); submitForm();" class="bg-white p-6 rounded w-96 space-y-3">
+  <h1 class="text-xl font-bold text-center">تسجيل أدمن</h1>
+  <input id="nameInput" placeholder="الاسم الكامل" class="w-full border p-2">
+  <input id="emailInput" placeholder="email" class="w-full border p-2">
+  <input id="phoneInput" placeholder="الهاتف" class="w-full border p-2">
+  <input id="passwordInput" type="password" placeholder="كلمة المرور" class="w-full border p-2">
+  <input id="schoolInput" placeholder="اسم المدرسة" class="w-full border p-2">
+  <input id="receiptInput" type="file" class="w-full border p-2">
+  <button class="w-full bg-blue-600 text-white py-2">إرسال</button>
+</form>
 </body>
 </html>
